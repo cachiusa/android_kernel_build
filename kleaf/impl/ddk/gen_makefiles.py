@@ -24,6 +24,7 @@ import logging
 import os
 import pathlib
 import shlex
+import shutil
 import sys
 import textwrap
 from typing import Optional, TextIO, Any
@@ -115,8 +116,11 @@ def _merge_directories(
             dst_path.parent.mkdir(parents=True, exist_ok=True)
             with open(dst_path, "a") as dst, \
                     open(submodule_file, "r") as src:
-                # Comments are not allowed in .cflags files
-                if dst_path.suffix != ".cflags":
+                if dst_path.suffix in (".c", ".rs", ".h"):
+                    dst.write(f"// {submodule_file}\n")
+                elif dst_path.suffix == ".S":
+                    dst.write(f"/* {submodule_file} */\n")
+                elif dst_path.name in ("Kbuild", "Makefile"):
                     dst.write(f"# {submodule_file}\n")
                 dst.write(src.read())
                 dst.write("\n")
@@ -191,8 +195,24 @@ def _gen_ddk_makefile_for_module(
     for kernel_module_srcs_json_item in kernel_module_srcs_json_content:
         rel_item = dict(kernel_module_srcs_json_item)
         rel_item["files"] = [pathlib.Path(src).relative_to(package)
-                             for src in rel_item["files"]
+                             for src in rel_item.get("files", [])
                              if pathlib.Path(src).is_relative_to(package)]
+
+        # Generated files example:
+        #   short_path = package/file.c
+        #   path = bazel-out/k8-fastbuild/bin/package/file.c
+        #   rel_package_path = file.c
+        for short_path, path in rel_item.get("gen", {}).items():
+            short_path = pathlib.Path(short_path)
+            path = pathlib.Path(path)
+            if not short_path.is_relative_to(package):
+                continue
+            rel_package_path = short_path.relative_to(package)
+            rel_item["files"].append(rel_package_path)
+            dest = output_makefiles / rel_package_path
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy(path, dest)
+
         rel_srcs.append(rel_item)
 
     if kernel_module_out.suffix != ".ko":
@@ -340,7 +360,6 @@ def _handle_src(
                     """))
     else:
         out_file.write(textwrap.dedent(f"""\
-                        # Source: {package / src}
                         {kernel_module_out.with_suffix('').name}-{obj_suffix} += {out}
                     """))
 

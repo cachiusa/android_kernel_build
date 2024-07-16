@@ -15,6 +15,7 @@
 """Headers target for DDK."""
 
 load("@bazel_skylib//lib:paths.bzl", "paths")
+load("@bazel_skylib//lib:sets.bzl", "sets")
 load(":common_providers.bzl", "DdkIncludeInfo")
 load(":ddk/ddk_config_subrule.bzl", "ddk_config_subrule")
 
@@ -38,6 +39,20 @@ DdkHeadersInfo = provider(
         "files": "A [depset](https://bazel.build/rules/lib/depset) of header files of this target and dependencies",
     },
 )
+
+def get_extra_include_roots(headers):
+    """Given a list of headers, return a list of include roots.
+
+    For each header in headers, drop short_path from path to get an include_root.
+    Then return all include_roots.
+
+    Args:
+        headers: A list of headers.
+    Returns:
+        include roots to be prepended to include_dirs.
+    """
+
+    return sets.to_list(sets.make([header.root.path for header in headers]))
 
 def get_ddk_transitive_include_infos(deps):
     """Returns a depset containing include directories from the list of dependencies.

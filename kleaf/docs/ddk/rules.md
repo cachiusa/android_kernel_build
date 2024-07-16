@@ -105,3 +105,51 @@ One must understand the following caveats before using `ddk_submodule`:
 For up-to-date information about `ddk_module`, its API, examples, and caveats,
 see [documentation for all rules](../api_reference.md) and click on the
 `ddk_submodule` rule.
+
+### Generated files
+
+For `ddk_module` and `ddk_submodule`, you may use generated source and header
+files for `srcs`. For generated headers, `includes` may be set
+accordingly like non-generated headers.
+
+Exporting generated headers via `hdrs` are not yet supported.
+<!-- TODO(b/349420132): Support exporting generated headers. -->
+
+Example:
+
+```python
+write_file(
+    name = "generated_source",
+    out = "generated.c",
+    content = ["void some_generated_func(void) {}", ""],
+)
+
+write_file(
+    name = "generated_header",
+    out = "includes/fancy/generated.h",
+    content = ["extern void some_generated_func(void);", ""],
+)
+
+ddk_module(
+    name = "fancy_module",
+    kernel_build = "//common:kernel_aarch64",
+    out = "mod.ko",
+    srcs = [
+        "mod_main.c",
+        "generated_source",
+        "generated_header",
+    ],
+    deps = ["//common:all_headers_aarch64"],
+    includes = ["includes"],
+)
+```
+
+Then in `mod_main.c`, you can use
+
+```c
+#include <fancy/generated.h>
+void foo(void) { some_generated_func(); }
+```
+
+See `common-modules/virtual-device/kleaf_test/kleaf_test.bzl`,
+`_ddk_genfiles_test` for a more concrete example.
