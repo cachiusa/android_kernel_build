@@ -308,6 +308,14 @@ def _gen_ddk_makefile_for_module(
                 obj-y += {kernel_module_out.parent}/
                 """))
 
+def _get_rel_srcs_flat(rel_srcs: list[dict[str, Any]]) -> list[pathlib.Path] :
+    """List of source file paths(minus headers)."""
+    rel_srcs_flat: list[pathlib.Path] = []
+    for rel_item in rel_srcs:
+        files = rel_item["files"]
+        rel_srcs_flat.extend(
+            file for file in files if file.suffix in _SOURCE_SUFFIXES)
+    return rel_srcs_flat
 
 def _check_srcs_valid(rel_srcs: list[dict[str, Any]],
                       kernel_module_out: pathlib.Path):
@@ -318,12 +326,7 @@ def _check_srcs_valid(rel_srcs: list[dict[str, Any]],
          files relative to the current package.
         kernel_module_out: The `out` attribute.
     """
-    # List of paths of source files (minus headers)
-    rel_srcs_flat: list[pathlib.Path] = []
-    for rel_item in rel_srcs:
-        files = rel_item["files"]
-        rel_srcs_flat.extend(
-            file for file in files if file.suffix in _SOURCE_SUFFIXES)
+    rel_srcs_flat = _get_rel_srcs_flat(rel_srcs)
 
     source_files_with_name_of_kernel_module = \
         [src for src in rel_srcs_flat if src.with_suffix(
