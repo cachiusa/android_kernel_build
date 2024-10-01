@@ -51,12 +51,12 @@ class DieException(SystemExit):
         if msg:
             if die_exception is None:
                 logging.error(
-                    f"Expect build failure %s, but there's no failure", msg)
+                    "Expect build failure %s, but there's no failure", msg)
                 sys.exit(1)
             if die_exception.msg != msg:
                 logging.error(*die_exception.args, **die_exception.kwargs)
                 logging.error(
-                    f"Expect build failure %s, but got a different failure", msg)
+                    "Expect build failure %s, but got a different failure", msg)
                 sys.exit(1)
             return
 
@@ -70,10 +70,10 @@ def die(*args, **kwargs):
 
 
 def _get_license_str():
-  return textwrap.dedent("""\
-    # SPDX-License-Identifier: GPL-2.0
+    return textwrap.dedent("""\
+        # SPDX-License-Identifier: GPL-2.0
 
-  """)
+    """)
 
 def _gen_makefile(
         module_symvers_list: list[pathlib.Path],
@@ -108,7 +108,7 @@ def _merge_directories(
     if not submodule_makefile_dir.is_dir():
         die("Can't find directory %s", submodule_makefile_dir)
 
-    for root, dirs, files in os.walk(submodule_makefile_dir):
+    for root, _, files in os.walk(submodule_makefile_dir):
         for file in files:
             submodule_file = pathlib.Path(root) / file
             file_rel = submodule_file.relative_to(submodule_makefile_dir)
@@ -190,7 +190,8 @@ def _gen_ddk_makefile_for_module(
         **unused_kwargs
 ):
     kernel_module_srcs_json_content = json.load(kernel_module_srcs_json)
-    # List of JSON objects (dictionaries) with keys like "file", "config", "value", etc.
+    # List of JSON objects (dictionaries) with keys like "file", "config",
+    #  "value", etc.
     rel_srcs = []
     for kernel_module_srcs_json_item in kernel_module_srcs_json_content:
         rel_item = dict(kernel_module_srcs_json_item)
@@ -245,7 +246,7 @@ def _gen_ddk_makefile_for_module(
             obj_suffix = "y"
 
             if config is not None:
-                if value == True:
+                if value == True: # pylint: disable=singleton-comparison
                     # The special value True means y or m.
                     obj_suffix = f"$({config})"
                 else:
@@ -257,11 +258,10 @@ def _gen_ddk_makefile_for_module(
                     src=src,
                     out_file=out_file,
                     kernel_module_out=kernel_module_out,
-                    package=package,
                     obj_suffix=obj_suffix,
                 )
 
-            if config is not None and value != True:
+            if config is not None and value != True: # pylint: disable=singleton-comparison
                 out_file.write(textwrap.dedent(f"""\
                     endif # {conditional}
                 """))
@@ -279,7 +279,7 @@ def _gen_ddk_makefile_for_module(
             config = src_item.get("config")
             value = src_item.get("value")
 
-            if config is not None and value != True:
+            if config is not None and value != True: # pylint: disable=singleton-comparison
                 conditional = f"ifeq ($({config}),{value})"
                 out_file.write(f"{conditional}\n")
 
@@ -295,7 +295,7 @@ def _gen_ddk_makefile_for_module(
                     CFLAGS_{out} += @$(ROOT_DIR)/{package / out_cflags_subpath}
                     """))
 
-            if config is not None and value != True:
+            if config is not None and value != True: # pylint: disable=singleton-comparison
                 out_file.write(f"endif # {conditional}\n\n")
 
     top_kbuild = output_makefiles / "Kbuild"
@@ -314,8 +314,8 @@ def _check_srcs_valid(rel_srcs: list[dict[str, Any]],
     """Checks that the list of srcs is valid.
 
     Args:
-        rel_srcs: Like content in kernel_module_srcs_json, but only includes files
-          relative to the current package.
+        rel_srcs: Like content in kernel_module_srcs_json, but only includes
+         files relative to the current package.
         kernel_module_out: The `out` attribute.
     """
     # List of paths of source files (minus headers)
@@ -330,8 +330,9 @@ def _check_srcs_valid(rel_srcs: list[dict[str, Any]],
             ".ko") == kernel_module_out]
 
     if source_files_with_name_of_kernel_module and len(rel_srcs_flat) > 1:
-        die("Source files %s are not allowed to build %s when multiple source files exist. "
-            "Please change the name of the output file.",
+        die("Source files %s are not allowed to build %s when multiple source"
+            " files exist."
+            " Please change the name of the output file.",
             [str(e) for e in source_files_with_name_of_kernel_module],
             kernel_module_out)
 
@@ -340,7 +341,6 @@ def _handle_src(
         src: pathlib.Path,
         out_file: TextIO,
         kernel_module_out: pathlib.Path,
-        package: pathlib.Path,
         obj_suffix: str,
 ):
     # Ignore non-exported headers specified in srcs
