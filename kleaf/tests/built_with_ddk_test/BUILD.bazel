@@ -12,23 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//build/kernel/kleaf:kernel.bzl", "ddk_module")
-load(":contains_mark_test.bzl", "contains_mark_test")
+load(":ddk_made_test.bzl", "ddk_made_test")
 
 exports_files([
     "contain_mark_test.py",
 ])
 
-ddk_module(
-    name = "license_sample",
-    srcs = ["license.c"],
-    out = "sample_license_module.ko",
-    kernel_build = "//common:kernel_aarch64",
-    # This was modified for backport purposes.
-    deps = ["//common:all_headers"],
-)
+ddk_made_test(name = "ddk_made_test")
 
-contains_mark_test(
-    name = "license_sample_mark_test",
-    kernel_module = ":license_sample",
+test_suite(
+    name = "built_with_ddk_test",
+    tests = [":ddk_made_test"],  # Excluse SCM version tests.
 )

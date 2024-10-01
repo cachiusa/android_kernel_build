@@ -14,10 +14,8 @@
 
 import argparse
 import pathlib
-import re
 import subprocess
 import sys
-import tempfile
 import unittest
 
 from absl.testing import absltest
@@ -32,7 +30,7 @@ def load_arguments():
         help="Kernel module file",
     )
     parser.add_argument("--depmod", type=pathlib.Path, help="Depmod tool")
-    return parser.parse_args()
+    return parser.parse_known_args()
 
 
 arguments = None
@@ -63,7 +61,7 @@ class CheckMarkTest(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    arguments = load_arguments()
-    # Clear the buffer so absltest does not complain about unknown args.
-    sys.argv[1:] = []
+    arguments, unknown_args = load_arguments()
+    # Propagate unknown flags to absltest.
+    sys.argv[1:] = unknown_args
     absltest.main()
