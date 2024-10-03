@@ -107,6 +107,42 @@ cat ${ROOT_DIR}/${BUILD_CONFIG}
 echo -e "\n=== end: ${ROOT_DIR}/${BUILD_CONFIG}"
 echo "========================================================"
 
+# Print all other configs referenced in main build config
+function lsconfig() {
+  local buildcfg=$1 # main build config
+  local extra_configs=("$buildcfg")
+  grepcfg() { 
+    eval echo $(grep -E '^\.\ ' "$1" | sed 's/. //g')
+  }
+
+  set +e
+  
+  while true; do
+    for i in ${extra_configs[*]} ; do
+      subcfg="$(grepcfg "$i")"
+      [[ -n "$subcfg" ]] && [[ "${extra_configs[*]}" != *"$subcfg"* ]] && found_configs+=("$subcfg")
+    done
+
+    if [[ -n "${found_configs[*]}" ]]; then
+      extra_configs+=(${found_configs[*]})
+      found_configs=()
+    else
+      break
+    fi
+  done
+
+  unset extra_configs[0]
+  echo ${extra_configs[*]}
+
+  set -e
+}
+
+for fragment in $(lsconfig "${ROOT_DIR}/${BUILD_CONFIG}"); do
+  echo -e "++++ Build config: $fragment\n"
+  cat "$fragment"
+  echo -e "\n++++ end: $fragment"
+done
+
 export TZ=UTC
 export LC_ALL=C
 if [ -z "${SOURCE_DATE_EPOCH}" ]; then
