@@ -254,6 +254,11 @@ if [ -n "${TAGS_CONFIG}" ]; then
   exit 0
 fi
 
+if [ -n "${LEGACY_BUILD}" ]; then
+  GENERATE_TEST_MAPPINGS=1
+  USE_ABI_PROP=1
+fi
+
 # Truncate abi.prop file
 if [ -n "${USE_ABI_PROP}" ]; then
   ABI_PROP=${DIST_DIR}/abi.prop

@@ -183,6 +183,9 @@ If this is not set (and VENDOR_DLKM_MODULES_LIST is), a default set of propertie
 ### USE_ABI_PROP
 If defined, `abi.prop` will be generated in [DIST_DIR](#dist_dir) during build
 
+### LEGACY_BUILD
+To ensure compatibility with different kernels, some options are disabled by default. Set this variable will enable `GENERATE_TEST_MAPPINGS`, `USE_ABI_PROP`
+
 ## GKI-related options
 ### ABI_DEFINITION
 Location of the abi definition file relative to <REPO_ROOT>/KERNEL_DIR
