@@ -1,13 +1,4 @@
 # About build configuration
-Build config is a file consisting of:  
-1. Environment variables
-2. (additionally) Commands and functions to be evaluated by Shell  
-
-Note: 
-1. **All variables in this file are exported** and available to build.sh sub-processes (e.g. Make)  
-*This means if any variable (e.g. Kbuild variables) you would normally export before running Make, is not listed in this doc, just add it to build config.*
-2. If an environment variable is not specified in this file, you can directly pass it to build.sh  
-example: `LTO=thin build/build.sh`
 
 # List of all variables
 ## General options
