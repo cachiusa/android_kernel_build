@@ -467,8 +467,19 @@ kernel_platform_toolchain(
     ],
 )
 
+# The Rust toolchain itself is built against glibc. We need flags to build artifacts that
+# is linked to by the Rust toolchain itself, e.g. proc_macros.
+# Note this doesn't respect kernel_build.toolchain_version, which is deprecated (b/312744109),
+# so it is okay to ignore it.
+kernel_platform_toolchain(
+    name = "kernel_toolchain_exec_glibc",
+    override_platform = ":host_glibc",
+    visibility = ["//visibility:private"],
+)
+
 kernel_toolchains(
     name = "kernel_toolchains",
+    exec_glibc_toolchain = ":kernel_toolchain_exec_glibc",
     exec_toolchain = ":kernel_toolchain_exec",
     target_toolchain = "kernel_toolchain_target",
     # All kernel_* from different packages can see this
@@ -496,6 +507,17 @@ platform(
     visibility = [
         "//build/kernel:__subpackages__",
     ],
+)
+
+## host constraints + glibc
+## Note that this does not respect --host_platform and kernel_build.toolchain_version.
+platform(
+    name = "host_glibc",
+    constraint_values = [
+        "//build/kernel/kleaf/platforms/libc:glibc",
+    ],
+    parents = ["@platforms//host"],
+    visibility = ["//visibility:private"],
 )
 
 # 32-bit

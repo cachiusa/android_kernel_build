@@ -26,6 +26,17 @@ load(":debug.bzl", "debug")
 
 visibility("//build/kernel/kleaf/...")
 
+def _kernel_platform_toolchain_transition_impl(_settings, attrs):
+    if attrs.override_platform:
+        return {"//command_line_option:platforms": str(attrs.override_platform)}
+    return {}
+
+_kernel_platform_toolchain_transition = transition(
+    implementation = _kernel_platform_toolchain_transition_impl,
+    inputs = [],
+    outputs = ["//command_line_option:platforms"],
+)
+
 def _kernel_platform_toolchain_impl(ctx):
     should_print_platforms = debug.print_platforms(ctx)
     cc_info = cc_common.merge_cc_infos(
@@ -152,8 +163,12 @@ kernel_platform_toolchain = rule(
         "_glibc": attr.label(default = "//build/kernel/kleaf/platforms/libc:glibc"),
         # For using mandatory = False
         "_cc_toolchain": attr.label(default = "@bazel_tools//tools/cpp:optional_current_cc_toolchain"),
+        "override_platform": attr.label(
+            doc = "If set, force this target to use the given platform.",
+        ),
     },
     toolchains = use_cpp_toolchain(mandatory = False),
     fragments = ["cpp"],
     subrules = [debug.print_platforms],
+    cfg = _kernel_platform_toolchain_transition,
 )

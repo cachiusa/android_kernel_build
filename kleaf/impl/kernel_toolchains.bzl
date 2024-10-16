@@ -212,6 +212,7 @@ def _kernel_toolchains_impl(ctx):
         rust_env = _get_rust_env(
             rust_tools = ctx.attr._rust_tools,
             host_libc = exec.libc,
+            exec_glibc_info = ctx.attr.exec_glibc_toolchain[KernelPlatformToolchainInfo],
         )
         kernel_setup_env_var_cmd += rust_env.cmd
         all_files_transitive.append(rust_env.inputs)
@@ -229,7 +230,7 @@ def _kernel_toolchains_impl(ctx):
         host_sysroot = exec.sysroot,
     )
 
-def _get_rust_env_impl(_subrule_ctx, rust_tools, host_libc):
+def _get_rust_env_impl(_subrule_ctx, rust_tools, host_libc, exec_glibc_info):
     if not rust_tools:
         return _RustEnvInfo(
             inputs = depset(),
@@ -276,13 +277,18 @@ def _get_rust_env_impl(_subrule_ctx, rust_tools, host_libc):
         export -f kleaf_internal_eval_rust_flags
 
         kleaf_internal_eval_rust_flags
+
+        export PROCMACROLDFLAGS={quoted_proc_macro_ldflags}
+        # Don't add runpaths until we need them
     """.format(
         target = target,
         quoted_rust_bin = shell.quote(rustc.dirname),
         quoted_clangtools_bin = shell.quote(bindgen.dirname),
+        quoted_proc_macro_ldflags = _quote_sanitize_flags(exec_glibc_info.ldflags),
     )
+
     return _RustEnvInfo(
-        inputs = rust_files_depset,
+        inputs = depset(transitive = [rust_files_depset, exec_glibc_info.all_files]),
         cmd = cmd,
     )
 
@@ -304,6 +310,10 @@ kernel_toolchains = rule(
     implementation = _kernel_toolchains_impl,
     attrs = {
         "exec_toolchain": attr.label(
+            cfg = "exec",
+            providers = [KernelPlatformToolchainInfo],
+        ),
+        "exec_glibc_toolchain": attr.label(
             cfg = "exec",
             providers = [KernelPlatformToolchainInfo],
         ),
