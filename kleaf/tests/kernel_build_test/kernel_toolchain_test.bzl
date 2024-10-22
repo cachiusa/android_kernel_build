@@ -16,6 +16,7 @@
 
 load("@bazel_skylib//lib:unittest.bzl", "analysistest")
 load("@bazel_skylib//rules:write_file.bzl", "write_file")
+load("@kernel_toolchain_info//:dict.bzl", "CLANG_VERSION")
 load(
     "//build/kernel/kleaf/impl:constants.bzl",
     "MODULES_STAGING_ARCHIVE",
@@ -42,16 +43,9 @@ def kernel_toolchain_test(name):
         name: name of the test suite
     """
 
-    for clang_version in _CLANG_VERSIONS:
-        kernel_build(
-            name = name + "_kernel_" + clang_version,
-            toolchain_version = clang_version,
-            build_config = "build.config.fake",
-            outs = [],
-            tags = ["manual"],
-        )
-
-        filegroup_name = name + "_filegroup_" + clang_version
+    tests = []
+    for base_toolchain in _CLANG_VERSIONS:
+        filegroup_name = name + "_filegroup_" + base_toolchain
 
         write_file(
             name = filegroup_name + "_staging_archive",
@@ -76,7 +70,7 @@ def kernel_toolchain_test(name):
             constraint_values = [
                 "@platforms//os:android",
                 "@platforms//cpu:arm64",
-                Label("//prebuilts/clang/host/linux-x86/kleaf:{}".format(clang_version)),
+                Label("//prebuilts/clang/host/linux-x86/kleaf:{}".format(base_toolchain)),
             ],
         )
 
@@ -85,7 +79,7 @@ def kernel_toolchain_test(name):
             constraint_values = [
                 "@platforms//os:linux",
                 "@platforms//cpu:x86_64",
-                Label("//prebuilts/clang/host/linux-x86/kleaf:{}".format(clang_version)),
+                Label("//prebuilts/clang/host/linux-x86/kleaf:{}".format(base_toolchain)),
             ],
         )
 
@@ -101,45 +95,37 @@ def kernel_toolchain_test(name):
             tags = ["manual"],
         )
 
-    tests = []
+        test_name = "{name}_{device_toolchain}_against_filegroup_{base_toolchain}_test".format(
+            name = name,
+            device_toolchain = CLANG_VERSION,
+            base_toolchain = base_toolchain,
+        )
+        base_kernel = "{name}_filegroup_{base_toolchain}".format(
+            name = name,
+            base_toolchain = base_toolchain,
+        )
 
-    for base_kernel_type in ("kernel", "filegroup"):
-        for base_toolchain in _CLANG_VERSIONS:
-            for device_toolchain in _CLANG_VERSIONS:
-                test_name = "{name}_{device_toolchain}_against_{base_kernel_type}_{base_toolchain}_test".format(
-                    name = name,
-                    device_toolchain = device_toolchain,
-                    base_kernel_type = base_kernel_type,
-                    base_toolchain = base_toolchain,
-                )
-                base_kernel = "{name}_{base_kernel_type}_{base_toolchain}".format(
-                    name = name,
-                    base_kernel_type = base_kernel_type,
-                    base_toolchain = base_toolchain,
-                )
+        kernel_build(
+            name = test_name + "_device_kernel",
+            base_kernel = base_kernel,
+            build_config = "build.config.fake",
+            outs = [],
+            tags = ["manual"],
+        )
 
-                kernel_build(
-                    name = test_name + "_device_kernel",
-                    base_kernel = base_kernel,
-                    toolchain_version = device_toolchain,
-                    build_config = "build.config.fake",
-                    outs = [],
-                    tags = ["manual"],
-                )
+        if base_toolchain == CLANG_VERSION:
+            _pass_analysis_test(
+                name = test_name,
+                target_under_test = test_name + "_device_kernel",
+            )
+        else:
+            failure_test(
+                name = test_name,
+                target_under_test = test_name + "_device_kernel",
+                error_message_substrs = ["They must use the same `toolchain_version`."],
+            )
 
-                if base_toolchain == device_toolchain:
-                    _pass_analysis_test(
-                        name = test_name,
-                        target_under_test = test_name + "_device_kernel",
-                    )
-                else:
-                    failure_test(
-                        name = test_name,
-                        target_under_test = test_name + "_device_kernel",
-                        error_message_substrs = ["They must use the same `toolchain_version`."],
-                    )
-
-                tests.append(test_name)
+        tests.append(test_name)
 
     native.test_suite(
         name = name,

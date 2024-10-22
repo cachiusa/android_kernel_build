@@ -143,8 +143,7 @@ def kernel_build(
     via srcs (using a `glob()`). outs declares the output files that are surviving
     the build. The effective output file names will be
     `$(name)/$(output_file)`. Any other artifact is not guaranteed to be
-    accessible after the rule has run. The default `toolchain_version` is defined
-    with the value in `common/build.config.constants`, but can be overriden.
+    accessible after the rule has run.
 
     A few additional labels are generated.
     For example, if name is `"kernel_aarch64"`:
@@ -463,7 +462,7 @@ def kernel_build(
           [Nonconfigurable](https://bazel.build/reference/be/common-definitions#configurable-attributes).
           The toolchain version to depend on.
 
-          It is deprecated to specify `toolchain_version`. Instead, delete the attribute, so it
+          It is an error to specify `toolchain_version`. Instead, delete the attribute, so it
           uses the default clang toolchain. The default clang toolchain version is specified in the
           `@kernel_toolchain_info` repository, usually containing the content of
           `common/build.config.constants`.
@@ -677,12 +676,9 @@ WARNING: {}: defconfig_fragments is deprecated; use post_defconfig_fragments ins
 
     toolchain_constraints = []
     if toolchain_version != None:
-        # buildifier: disable=print
-        print("\nWARNING: {}: kernel_build.toolchain_version is deprecated. Please delete it.".format(
+        fail("{}: kernel_build.toolchain_version is deprecated. Please delete it.".format(
             native.package_relative_label(name),
         ))
-        toolchain_constraint = Label("//prebuilts/clang/host/linux-x86/kleaf:{}".format(toolchain_version))
-        toolchain_constraints.append(Label(toolchain_constraint))
     else:
         # use default toolchain, e.g.
         # //prebuilts/clang/host/linux-x86/kleaf:android_arm64_clang_toolchain

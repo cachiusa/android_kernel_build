@@ -1485,8 +1485,7 @@ It uses a `build_config` to construct a deterministic build environment (e.g.
 via srcs (using a `glob()`). outs declares the output files that are surviving
 the build. The effective output file names will be
 `$(name)/$(output_file)`. Any other artifact is not guaranteed to be
-accessible after the rule has run. The default `toolchain_version` is defined
-with the value in `common/build.config.constants`, but can be overriden.
+accessible after the rule has run.
 
 A few additional labels are generated.
 For example, if name is `"kernel_aarch64"`:
@@ -1525,7 +1524,7 @@ For example, if name is `"kernel_aarch64"`:
 | <a id="kernel_build-collect_unstripped_modules"></a>collect_unstripped_modules |  If `True`, provide all unstripped in-tree.   |  `None` |
 | <a id="kernel_build-enable_interceptor"></a>enable_interceptor |  If set to `True`, enable interceptor so it can be used in [`kernel_compile_commands`](#kernel_compile_commands).   |  `None` |
 | <a id="kernel_build-kbuild_symtypes"></a>kbuild_symtypes |  The value of `KBUILD_SYMTYPES`.<br><br>This can be set to one of the following:<br><br>- `"true"` - `"false"` - `"auto"` - `None`, which defaults to `"auto"`<br><br>If the value is `"auto"`, it is determined by the `--kbuild_symtypes` flag.<br><br>If the value is `"true"`; or the value is `"auto"` and `--kbuild_symtypes` is specified, then `KBUILD_SYMTYPES=1`. **Note**: kernel build time can be significantly longer.<br><br>If the value is `"false"`; or the value is `"auto"` and `--kbuild_symtypes` is not specified, then `KBUILD_SYMTYPES=`.   |  `None` |
-| <a id="kernel_build-toolchain_version"></a>toolchain_version |  **Deprecated**. [Nonconfigurable](https://bazel.build/reference/be/common-definitions#configurable-attributes). The toolchain version to depend on.<br><br>It is deprecated to specify `toolchain_version`. Instead, delete the attribute, so it uses the default clang toolchain. The default clang toolchain version is specified in the `@kernel_toolchain_info` repository, usually containing the content of `common/build.config.constants`.   |  `None` |
+| <a id="kernel_build-toolchain_version"></a>toolchain_version |  **Deprecated**. [Nonconfigurable](https://bazel.build/reference/be/common-definitions#configurable-attributes). The toolchain version to depend on.<br><br>It is an error to specify `toolchain_version`. Instead, delete the attribute, so it uses the default clang toolchain. The default clang toolchain version is specified in the `@kernel_toolchain_info` repository, usually containing the content of `common/build.config.constants`.   |  `None` |
 | <a id="kernel_build-strip_modules"></a>strip_modules |  If `None` or not specified, default is `False`. If set to `True`, debug information for distributed modules is stripped.<br><br>This corresponds to negated value of `DO_NOT_STRIP_MODULES` in `build.config`.   |  `None` |
 | <a id="kernel_build-module_signing_key"></a>module_signing_key |  A label referring to a module signing key.<br><br>This is to allow for dynamic setting of `CONFIG_MODULE_SIG_KEY` from Bazel.   |  `None` |
 | <a id="kernel_build-system_trusted_key"></a>system_trusted_key |  A label referring to a trusted system key.<br><br>This is to allow for dynamic setting of `CONFIG_SYSTEM_TRUSTED_KEY` from Bazel.   |  `None` |
