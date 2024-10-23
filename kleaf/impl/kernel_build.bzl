@@ -1859,10 +1859,15 @@ def create_serialized_env_info(
 
     setup_script = ctx.actions.declare_file(setup_script_name)
     setup_script_cmd = """
-        . {pre_setup_script}
+        if [ -n "${{BUILD_WORKSPACE_DIRECTORY}}" ] || [ "${{BAZEL_TEST}}" = "1" ]; then
+            . {pre_setup_script_short}
+        else
+            . {pre_setup_script}
+        fi
         {restore_outputs_cmd}
     """.format(
         pre_setup_script = pre_info.setup_script.path,
+        pre_setup_script_short = pre_info.setup_script.short_path,
         restore_outputs_cmd = restore_outputs_cmd,
     )
     ctx.actions.write(

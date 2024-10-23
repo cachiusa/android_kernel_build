@@ -951,13 +951,21 @@ def get_config_setup_command(
         [ -z ${{OUT_DIR}} ] && echo "FATAL: configs post_env_info setup run without OUT_DIR set!" >&2 && exit 1
         # Restore kernel config inputs
         mkdir -p ${{OUT_DIR}}/include/
-        rsync -aL {out_dir}/.config ${{OUT_DIR}}/.config
-        rsync -aL --chmod=D+w {out_dir}/include/ ${{OUT_DIR}}/include/
-        rsync -aL --chmod=F+w {out_dir}/localversion ${{OUT_DIR}}/localversion
-        if [[ -f {out_dir}/{raw_kmi_symbol_list_below_out_dir} ]]; then
-            rsync -aL --chmod=F+w \\
-                {out_dir}/{raw_kmi_symbol_list_below_out_dir} ${{OUT_DIR}}/
-        fi
+
+        (
+            if [ -n "${{BUILD_WORKSPACE_DIRECTORY}}" ] || [ "${{BAZEL_TEST}}" = "1" ]; then
+                rule_out_dir={out_dir_short}
+            else
+                rule_out_dir={out_dir}
+            fi
+            rsync -aL ${{rule_out_dir}}/.config ${{OUT_DIR}}/.config
+            rsync -aL --chmod=D+w ${{rule_out_dir}}/include/ ${{OUT_DIR}}/include/
+            rsync -aL --chmod=F+w ${{rule_out_dir}}/localversion ${{OUT_DIR}}/localversion
+            if [[ -f ${{rule_out_dir}}/{raw_kmi_symbol_list_below_out_dir} ]]; then
+                rsync -aL --chmod=F+w \\
+                    ${{rule_out_dir}}/{raw_kmi_symbol_list_below_out_dir} ${{OUT_DIR}}/
+            fi
+        )
 
         # Restore real value of $ROOT_DIR in auto.conf.cmd
         sed -i'' -e 's:${{ROOT_DIR}}:'"${{ROOT_DIR}}"':g' ${{OUT_DIR}}/include/config/auto.conf.cmd
@@ -965,6 +973,7 @@ def get_config_setup_command(
         env_setup_command = env_setup_command,
         eval_restore_out_dir_cmd = kernel_utils.eval_restore_out_dir_cmd(),
         out_dir = out_dir.path,
+        out_dir_short = out_dir.short_path,
         raw_kmi_symbol_list_below_out_dir = _RAW_KMI_SYMBOL_LIST_BELOW_OUT_DIR,
     )
     cmd += extra_restore_outputs_cmd

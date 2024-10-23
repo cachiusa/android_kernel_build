@@ -98,8 +98,7 @@ def _get_kernel_release(ctx):
     return kernel_release
 
 def _get_config_env(ctx):
-    """Returns a KernelSerializedEnvInfo analogous to that returned by kernel_config().
-    """
+    """Returns a KernelSerializedEnvInfo analogous to that returned by kernel_config()."""
 
     if not ctx.file.config_out_dir or not ctx.file.env_setup_script:
         return None
@@ -109,11 +108,16 @@ def _get_config_env(ctx):
 
     env_setup_command = """
         KLEAF_REPO_WORKSPACE_ROOT={kleaf_repo_workspace_root}
-        KLEAF_HERMETIC_BASE={hermetic_base}
+        if [ -n "${{BUILD_WORKSPACE_DIRECTORY}}" ] || [ "${{BAZEL_TEST}}" = "1" ]; then
+            KLEAF_HERMETIC_BASE={run_hermetic_base}
+        else
+            KLEAF_HERMETIC_BASE={hermetic_base}
+        fi
         KLEAF_FIX_KERNEL_DIR=1
     """.format(
         kleaf_repo_workspace_root = Label(":kernel_filegroup.bzl").workspace_root,
         hermetic_base = hermetic_tools.internal_hermetic_base,
+        run_hermetic_base = hermetic_tools.internal_run_hermetic_base,
     )
     env_setup_command += get_env_info_setup_command(
         hermetic_tools_setup = hermetic_tools.setup,
