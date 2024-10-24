@@ -81,13 +81,13 @@ def _create_kconfig_ext_step(ctx, kconfig_depset_written):
         fi
         rsync -aL --include="*/" --include="Kconfig*" --exclude="*" ${{KERNEL_DIR}}/${{KCONFIG_EXT_PREFIX}} {intermediates_dir}/
 
-        KCONFIG_EXT_PREFIX=$(realpath {intermediates_dir} --relative-to ${{ROOT_DIR}}/${{KERNEL_DIR}})/
+        KCONFIG_EXT_PREFIX=$(realpath ${{ROOT_DIR}} --relative-to ${{ROOT_DIR}}/${{KERNEL_DIR}})/{intermediates_dir}/
 
         # Source Kconfig from depending modules
         if [[ -s {kconfig_depset_file} ]]; then
             (
                 for kconfig in $(cat {kconfig_depset_file}); do
-                    mod_kconfig_rel=$(realpath ${{kconfig}} --relative-to ${{ROOT_DIR}}/${{KERNEL_DIR}})
+                    mod_kconfig_rel=$(realpath ${{ROOT_DIR}} --relative-to ${{ROOT_DIR}}/${{KERNEL_DIR}})/${{kconfig}}
                     echo 'source "'"${{mod_kconfig_rel}}"'"' >> {intermediates_dir}/Kconfig.ext
                 done
             )
