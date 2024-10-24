@@ -491,11 +491,16 @@ def _setup_serialized_env_cmd(serialized_env_info, restore_out_dir_cmd):
 
     return """#!/bin/bash -e
         KLEAF_RESTORE_OUT_DIR_CMD={quoted_restore_out_dir_cmd}
-        . {setup_script}
+        if [ -n "${{BUILD_WORKSPACE_DIRECTORY}}" ] || [ "${{BAZEL_TEST}}" = "1" ]; then
+            . {setup_script_short}
+        else
+            . {setup_script}
+        fi
         unset KLEAF_RESTORE_OUT_DIR_CMD
     """.format(
         quoted_restore_out_dir_cmd = shell.quote(restore_out_dir_cmd),
         setup_script = serialized_env_info.setup_script.path,
+        setup_script_short = serialized_env_info.setup_script.short_path,
     )
 
 kernel_utils = struct(

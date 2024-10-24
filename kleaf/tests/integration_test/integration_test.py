@@ -812,8 +812,14 @@ class DdkWorkspaceSetupTest(KleafIntegrationTestBase):
 
         args = []
         # Switch base kernel when using prebuilts
+        # pylint: disable=line-too-long
         if prebuilts_dir:
             args.append("--//tests:kernel=@gki_prebuilts//kernel_aarch64")
+            args.append("--@kleaf//build/kernel/kleaf/tests/ddk_menuconfig_test:kernel_build=@gki_prebuilts//kernel_aarch64")
+        else:
+            # --//tests:kernel already this default value
+            args.append("--@kleaf//build/kernel/kleaf/tests/ddk_menuconfig_test:kernel_build=@kleaf//common:kernel_aarch64")
+
         if build_targets:
             args.extend(build_targets)
             self._check_call("build", args, cwd=ddk_workspace)

@@ -90,5 +90,6 @@ test_suite(
         ":build_test",
         ":modules_test",
         ":zram_test",
+        "@kleaf//build/kernel/kleaf/tests/ddk_menuconfig_test",
     ],
 )

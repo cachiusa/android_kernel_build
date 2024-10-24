@@ -19,6 +19,7 @@ test_suite(
     tests = [
         "//build/kernel/kleaf/tests/built_with_ddk_test",
         "//build/kernel/kleaf/tests/cc_testing",
+        "//build/kernel/kleaf/tests/ddk_menuconfig_test",
         "//build/kernel/kleaf/tests/ddk_test",
         "//build/kernel/kleaf/tests/debug_test",
         "//build/kernel/kleaf/tests/empty_binary_test",
@@ -53,5 +54,15 @@ bzl_library(
     deps = [
         "//build/kernel/kleaf:hermetic_tools_def",
         "@bazel_skylib//lib:shell",
+    ],
+)
+
+py_binary(
+    name = "fail_binary_test_binary",
+    srcs = ["fail_binary_test.py"],
+    main = "fail_binary_test.py",
+    visibility = ["//build/kernel/kleaf/tests:__subpackages__"],
+    deps = [
+        "@io_abseil_py//absl/testing:absltest",
     ],
 )
