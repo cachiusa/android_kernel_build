@@ -40,6 +40,7 @@ load("//build/kernel/kleaf/impl:ddk/ddk_module.bzl", _ddk_module = "ddk_module")
 load("//build/kernel/kleaf/impl:ddk/ddk_submodule.bzl", _ddk_submodule = "ddk_submodule")
 load("//build/kernel/kleaf/impl:ddk/ddk_uapi_headers.bzl", _ddk_uapi_headers = "ddk_uapi_headers")
 load("//build/kernel/kleaf/impl:gki_artifacts.bzl", _gki_artifacts = "gki_artifacts", _gki_artifacts_prebuilts = "gki_artifacts_prebuilts")
+load("//build/kernel/kleaf/impl:image/dtb_image.bzl", _dtb_image = "dtb_image")
 load("//build/kernel/kleaf/impl:image/dtbo.bzl", _dtbo = "dtbo")
 load("//build/kernel/kleaf/impl:image/initramfs.bzl", _initramfs = "initramfs")
 load("//build/kernel/kleaf/impl:image/kernel_images.bzl", _kernel_images = "kernel_images")
@@ -72,6 +73,7 @@ ddk_uapi_headers = _ddk_uapi_headers
 dependency_graph = _dependency_graph
 dependency_graph_drawer = _dependency_graph_drawer
 dependency_graph_extractor = _dependency_graph_extractor
+dtb_image = _dtb_image
 dtbo = _dtbo
 extract_symbols = _extract_symbols
 gki_artifacts = _gki_artifacts
