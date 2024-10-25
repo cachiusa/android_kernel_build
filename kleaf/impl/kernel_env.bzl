@@ -374,7 +374,6 @@ def _get_env_setup_cmds(ctx):
         pre_env += debug.trap()
 
     kleaf_repo_workspace_root = Label(":kernel_env.bzl").workspace_root
-    kleaf_repo_workspace_root_slash = (kleaf_repo_workspace_root + "/") if kleaf_repo_workspace_root else ""
 
     pre_env += """
         # KLEAF_REPO_WORKSPACE_ROOT: workspace_root of the Kleaf repository. See Label.workspace_root.
@@ -433,8 +432,27 @@ def _get_env_setup_cmds(ctx):
         fi
 
         # Redeclare KERNEL_DIR to be under $KLEAF_REPO_WORKSPACE_ROOT.
-        if [ -n "${{KLEAF_REPO_WORKSPACE_ROOT}}" ]; then
-            export KERNEL_DIR=${{KLEAF_REPO_WORKSPACE_ROOT:+$KLEAF_REPO_WORKSPACE_ROOT/}}${{KERNEL_DIR#{kleaf_repo_workspace_root_slash}}}
+        # Only do that if all of the following is true:
+        #   - We are setting up the variables for a kernel_filegroup with prebuilt scripts
+        #     (KLEAF_FIX_KERNEL_DIR == 1)
+        #   - The kernel_build() that originally built these prebuilts was declared at the
+        #     root Bazel module in its workspace (we may relax this requirement in the future if
+        #     there's a use case)
+        # A typical use case for this is that KERNEL_DIR=common in prebuilt scripts, but if @kleaf
+        #    is a dependent module and common/ is below @kleaf, then kernel_filegroup need to fix
+        #    the value so that KERNEL_DIR=external/kleaf~/common.
+        if [ "${{KLEAF_FIX_KERNEL_DIR}}" = 1 ]; then
+
+            if [ -n "{kernel_build_workspace_root}" ]; then
+                echo "ERROR: The original kernel_build() that built these prebuilts was " >&2
+                echo "    {kernel_build_label}" >&2
+                echo "  It is currently not supported to use these prebuilts within a kernel_filegroup." >&2
+                echo "  Instead, the kernel_build() should have been built at the root Bazel module." >&2
+                echo "  Please contact the provider for these prebuilts to resolve this error." >&2
+                exit 1
+            fi
+
+            export KERNEL_DIR=${{KLEAF_REPO_WORKSPACE_ROOT:+$KLEAF_REPO_WORKSPACE_ROOT/}}${{KERNEL_DIR}}
         fi
 
         ## Set up KCPPFLAGS and KCPPFLAGS_COMPAT
@@ -468,8 +486,10 @@ def _get_env_setup_cmds(ctx):
         get_make_jobs_cmd = status.get_volatile_status_cmd(ctx, "MAKE_JOBS"),
         get_make_keep_going_cmd = status.get_volatile_status_cmd(ctx, "MAKE_KEEP_GOING"),
         linux_x86_libs_path = ctx.files._linux_x86_libs[0].dirname,
-        kleaf_repo_workspace_root_slash = kleaf_repo_workspace_root_slash,
+        kernel_build_workspace_root = ctx.label.workspace_root,
+        kernel_build_label = str(ctx.label).removesuffix("_env"),
     )
+
     return struct(
         pre_env = pre_env,
         post_env = post_env,
