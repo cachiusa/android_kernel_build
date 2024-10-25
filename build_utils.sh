@@ -866,7 +866,7 @@ function gki_dry_run_certify_bootimg() {
 
   certify_bootimg --boot_img "$1" \
     --algorithm SHA256_RSA4096 \
-    --key tools/mkbootimg/gki/testdata/testkey_rsa4096.pem \
+    --key ${KLEAF_INTERNAL_GKI_BOOT_IMG_CERTIFICATION_KEY} \
     --gki_info "$2" \
     --output "$1" \
     "${additional_props[@]}"
