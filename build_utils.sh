@@ -664,6 +664,17 @@ function gki_add_avb_footer() {
     ${additional_props}
 }
 
+function check_gki_boot_img_certification_key() {
+  if [ -z "${KLEAF_INTERNAL_GKI_BOOT_IMG_CERTIFICATION_KEY}" ]; then
+   KLEAF_INTERNAL_GKI_BOOT_IMG_CERTIFICATION_KEY="tools/mkbootimg/gki/testdata/testkey_rsa4096.pem"
+  fi
+
+  if [ ! -f "${KLEAF_INTERNAL_GKI_BOOT_IMG_CERTIFICATION_KEY}" ]; then
+    echo "GKI boot.img certification key not found. KLEAF_INTERNAL_GKI_BOOT_IMG_CERTIFICATION_KEY = ${KLEAF_INTERNAL_GKI_BOOT_IMG_CERTIFICATION_KEY}"
+    exit 1
+  fi
+}
+
 # gki_dry_run_certify_bootimg <boot_image> <gki_artifacts_info_file> <security_patch_level>
 # The certify_bootimg script will be executed on a server over a GKI
 # boot.img during the official certification process, which embeds
@@ -671,6 +682,8 @@ function gki_add_avb_footer() {
 # VTS to verify that a GKI boot.img is authentic.
 # Dry running the process here so we can catch related issues early.
 function gki_dry_run_certify_bootimg() {
+  check_gki_boot_img_certification_key
+
   local spl_date="$3"
   local additional_props=()
   if [ -n "${spl_date}" ]; then
@@ -680,7 +693,7 @@ function gki_dry_run_certify_bootimg() {
 
   certify_bootimg --boot_img "$1" \
     --algorithm SHA256_RSA4096 \
-    --key tools/mkbootimg/gki/testdata/testkey_rsa4096.pem \
+    --key ${KLEAF_INTERNAL_GKI_BOOT_IMG_CERTIFICATION_KEY} \
     --gki_info "$2" \
     --output "$1" \
     "${additional_props[@]}"
