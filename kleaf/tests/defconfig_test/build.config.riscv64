@@ -1,0 +1,2 @@
+. ${ROOT_DIR}/${KERNEL_DIR}/build.config.common
+. ${ROOT_DIR}/${KERNEL_DIR}/build.config.riscv64
