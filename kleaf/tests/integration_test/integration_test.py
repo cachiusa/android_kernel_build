@@ -625,7 +625,7 @@ class DdkWorkspaceSetupTest(KleafIntegrationTestBase):
             self.real_kleaf_repo, self.ddk_workspace)
 
     def test_kleaf_module_below_ddk_workspace(self):
-        """Tests that @kelaf is below DDK workspace"""
+        """Tests that @kleaf is below DDK workspace"""
         kleaf_repo = self.ddk_workspace / "external/kleaf"
         if not arguments.mount_spec:
             mount_spec = {
