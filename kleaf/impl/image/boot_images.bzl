@@ -44,6 +44,7 @@ def _build_boot_or_vendor_boot(
         avb_boot_partition_name,
         ramdisk_compression,
         ramdisk_compression_args,
+        dtb_image_file,
         *,
         _search_and_cp_output):
     ## Declare implicit outputs of the command
@@ -90,6 +91,9 @@ def _build_boot_or_vendor_boot(
         kernel_build[KernelSerializedEnvInfo].inputs,
     ]
     transitive_inputs += [target.files for target in deps]
+
+    if dtb_image_file:
+        inputs.append(dtb_image_file)
 
     transitive_tools = [kernel_build[KernelSerializedEnvInfo].tools]
 
@@ -188,6 +192,11 @@ def _build_boot_or_vendor_boot(
                BUILD_INITRAMFS=
                INITRAMFS_STAGING_DIR=
         """
+    boot_flag_cmd += """
+        DTB_IMAGE={dtb_image}
+    """.format(
+        dtb_image = utils.optional_path(dtb_image_file),
+    )
     if unpack_ramdisk:
         boot_flag_cmd += """
             if [[ -n ${SKIP_UNPACKING_RAMDISK} ]]; then
@@ -309,6 +318,7 @@ def _boot_images_impl(ctx):
         avb_boot_partition_name = ctx.attr.avb_boot_partition_name,
         ramdisk_compression = ctx.attr.ramdisk_compression,
         ramdisk_compression_args = ctx.attr.ramdisk_compression_args,
+        dtb_image_file = ctx.file.dtb_image,
     )
 
 boot_images = rule(
@@ -391,6 +401,13 @@ Execute `build_boot_images` in `build_utils.sh`.""",
         ),
         "ramdisk_compression_args": attr.string(
             doc = "Command line arguments passed only to lz4 command to control compression level.",
+        ),
+        "dtb_image": attr.label(
+            doc = """A dtb.img to packaged.
+                If this is set, then *.dtb from `kernel_build` are ignored.
+
+                See [`dtb_image`](#dtb_image).""",
+            allow_single_file = True,
         ),
     },
     subrules = [build_boot_or_vendor_boot],

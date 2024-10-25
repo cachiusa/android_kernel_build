@@ -41,6 +41,7 @@ def _vendor_boot_image_impl(ctx):
         avb_boot_partition_name = None,
         ramdisk_compression = ctx.attr.ramdisk_compression,
         ramdisk_compression_args = ctx.attr.ramdisk_compression_args,
+        dtb_image_file = ctx.file.dtb_image,
     )
 
 vendor_boot_image = rule(
@@ -55,6 +56,13 @@ vendor_boot_image = rule(
         "initramfs": attr.label(
             doc = "The [`initramfs`](#initramfs).",
             providers = [InitramfsInfo],
+        ),
+        "dtb_image": attr.label(
+            doc = """A dtb.img to packaged.
+                If this is set, then *.dtb from `kernel_build` are ignored.
+
+                See [`dtb_image`](#dtb_image).""",
+            allow_single_file = True,
         ),
         "deps": attr.label_list(
             doc = "Additional dependencies to build boot images.",
