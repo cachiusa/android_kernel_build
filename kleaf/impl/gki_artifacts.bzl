@@ -99,6 +99,7 @@ def _gki_artifacts_impl(ctx):
         export DIST_DIR=$(readlink -e {dist_dir})
         export OUT_DIR=$(readlink -e {out_dir})
         export MKBOOTIMG_PATH={mkbootimg}
+        export KLEAF_INTERNAL_GKI_BOOT_IMG_CERTIFICATION_KEY={testkey}
         {size_cmd}
         {skip_avb_cmd}
         build_gki_artifacts
@@ -111,6 +112,7 @@ def _gki_artifacts_impl(ctx):
         quoted_gki_kernel_cmdline = shell.quote(ctx.attr.gki_kernel_cmdline),
         quoted_arch = shell.quote(ctx.attr.arch),
         mkbootimg = ctx.file.mkbootimg.path,
+        testkey = ctx.file._testkey.path,
         size_cmd = size_cmd,
         skip_avb_cmd = skip_avb_cmd,
     )
