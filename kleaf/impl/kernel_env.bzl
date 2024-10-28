@@ -388,8 +388,7 @@ def _kernel_env_impl(ctx):
 def get_env_info_setup_command(hermetic_tools_setup, build_utils_sh, env_setup_script):
     """Returns text for KernelEnvInfo.setup"""
 
-    return """
-        {hermetic_tools_setup}
+    return """{hermetic_tools_setup}
         source {build_utils_sh}
         # source the build environment
         source {env_setup_script}
