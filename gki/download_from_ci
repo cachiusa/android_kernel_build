@@ -764,9 +764,10 @@ def update_microdroid_kernel():
   base_dir = os.path.join(output_dir, "packages", "modules", "Virtualization",
                           "guest", "kernel", short_branch)
 
-  for arch in "arm64", "x86_64":
-    arch_suffix = "aarch64" if arch == "arm64" else arch
-    directory = os.path.join(base_dir, arch)
+  for arch in "arm64", "arm64_16k", "x86_64":
+    arch_suffix = arch.replace("arm64", "aarch64")
+    sub_dirs = ["arm64", "16k"] if arch == "arm64_16k" else [arch]
+    directory = os.path.join(base_dir, *sub_dirs)
     os.makedirs(directory, exist_ok=True)
     kernel = os.path.join(directory, "kernel-" + version)
     old_version, old_sha = None, None
