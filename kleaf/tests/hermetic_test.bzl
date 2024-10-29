@@ -25,7 +25,7 @@ def _hermetic_test_impl(ctx):
     if ctx.attr.append_host_path:
         run_setup = hermetic_tools.run_additional_setup
     else:
-        run_setup = hermetic_tools.run_setup
+        run_setup = hermetic_tools.setup
 
     runfiles_transitive_files = [
         hermetic_tools.deps,

@@ -26,7 +26,7 @@ def _checkpatch_impl(ctx):
         # git is not part of hermetic tools. Work around it.
         GIT=$(command -v git)
 
-        {run_setup}
+        {hermetic_tools_setup}
 
         {checkpatch_sh} \\
             --ignored_checks $(realpath -e {ignorelist}) \\
@@ -35,7 +35,7 @@ def _checkpatch_impl(ctx):
             --checkpatch_pl $(realpath -e {checkpatch_pl}) \\
             --git ${{GIT}}
     """.format(
-        run_setup = hermetic_tools.run_setup,
+        hermetic_tools_setup = hermetic_tools.setup,
         checkpatch_pl = ctx.file.checkpatch_pl.short_path,
         checkpatch_sh = ctx.executable._checkpatch_sh.short_path,
         ignorelist = ctx.file.ignorelist.short_path,

@@ -570,7 +570,7 @@ def _get_run_env(ctx, srcs, toolchains, set_kernel_dir_ret):
     toolchains = kernel_toolchains_utils.get(ctx)
     hermetic_tools = hermetic_toolchain.get(ctx)
 
-    setup = hermetic_tools.run_setup
+    setup = hermetic_tools.setup
     if ctx.attr._debug_annotate_scripts[BuildSettingInfo].value:
         setup += debug.trap()
     setup += _get_make_verbosity_command(ctx)

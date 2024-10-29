@@ -105,7 +105,7 @@ def _check_fail_action_message_impl(ctx):
         # Expecting failure
         transitive_runfiles = hermetic_tools.deps
         direct_runfiles += [expected, actual]
-        script = hermetic_tools.run_setup + """
+        script = hermetic_tools.setup + """
                 if ! diff -q {expected} {actual}; then
                     echo "ERROR: expected error message different from actual file." >&2
                     diff {expected} {actual} >&2
@@ -120,7 +120,7 @@ def _check_fail_action_message_impl(ctx):
         if actual.basename == "expected_message.txt":
             transitive_runfiles = hermetic_tools.deps
             direct_runfiles.append(actual)
-            script = hermetic_tools.run_setup + """
+            script = hermetic_tools.setup + """
                 echo "ERROR: expected success, but got" >&2
                 cat {actual} >&2
                 exit 1

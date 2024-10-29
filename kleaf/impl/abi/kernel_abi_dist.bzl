@@ -232,7 +232,7 @@ def kernel_abi_wrapped_dist(
 
 def _kernel_abi_wrapped_dist_internal_impl(ctx):
     hermetic_tools = hermetic_toolchain.get(ctx)
-    script = hermetic_tools.run_setup + """
+    script = hermetic_tools.setup + """
         # Copy to dist dir
         {dist} "$@"
     """.format(dist = ctx.executable.dist.short_path)

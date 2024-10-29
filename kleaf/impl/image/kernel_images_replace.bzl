@@ -107,7 +107,7 @@ vendor_boot_image(
         "# FIXME: Please file a bug on Kleaf team to support building boot image.\n  # build_boot = True",
     ])
 
-    content = hermetic_tools.run_setup + """#!/bin/sh -e
+    content = hermetic_tools.setup + """#!/bin/sh -e
         exec {bin} {process_args}
     """.format(
         bin = ctx.executable._bin.short_path,

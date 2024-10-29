@@ -51,7 +51,7 @@ def _kernel_compile_commands_impl(ctx):
         ))
 
     script = ctx.actions.declare_file(ctx.attr.name + ".sh")
-    script_content = hermetic_tools.run_setup + """
+    script_content = hermetic_tools.setup + """
         OUTPUT=${1:-${BUILD_WORKSPACE_DIRECTORY}/compile_commands.json}
         : > ${OUTPUT}.tmp
     """

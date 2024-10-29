@@ -38,7 +38,9 @@ _HermeticToolchainInfo = provider(
     fields = {
         "deps": "a depset containing the hermetic tools",
         "setup": "setup script to initialize the environment to only use the hermetic tools",
-        "run_setup": """**IMPLEMENTATION DETAIL; DO NOT USE.**
+        "run_setup": """**DEPRECATED. Use `setup` directly.**
+
+**IMPLEMENTATION DETAIL; DO NOT USE.**
 
 setup script to initialize the environment to only use the hermetic tools in
 [execution phase](https://docs.bazel.build/versions/main/skylark/concepts.html#evaluation-model),
@@ -121,16 +123,25 @@ def _hermetic_tools_internal_impl(ctx):
     hashbang = """#!/bin/bash -e
 """
 
-    setup = fail_hard + """
-                export PATH=$({path}/readlink -m {path})
-""".format(path = hermetic_base)
-
     # The cwd is xxx.runfiles/<workspace_name>. We need to set RUNFILES_DIR to
     # xxx.runfiles so we can find other runfiles in binaries.
-    run_setup = hashbang + fail_hard + """
-                export PATH=$({path}/readlink -m {path})
-                export RUNFILES_DIR=$(realpath ..)
-""".format(path = hermetic_base_short)
+    # Uses :- here to prevent "unbound variable" error when being executed in a genrule.
+    setup = hashbang + fail_hard + """
+        if [ -n "${{BUILD_WORKSPACE_DIRECTORY:-}}" ] || [ "${{BAZEL_TEST:-}}" = "1" ]; then
+            export PATH=$({short_path}/readlink -m {short_path})
+            export RUNFILES_DIR=$(realpath ..)
+        else
+            export PATH=$({path}/readlink -m {path})
+        fi
+""".format(
+        path = hermetic_base,
+        short_path = hermetic_base_short,
+    )
+    run_setup = setup + """
+        echo "WARNING: You are using hermetic_tools.run_setup, which is a deprecated implementation detail." >&2
+        echo "    Use hermetic_tools.setup directly. This will be an error in the future.">&2
+    """
+
     run_additional_setup = fail_hard + """
                 export PATH=$({path}/readlink -m {path}):$PATH
 """.format(path = hermetic_base_short)

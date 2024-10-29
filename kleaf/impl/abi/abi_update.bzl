@@ -39,7 +39,7 @@ def _abi_update_impl(ctx):
 
         {diff}
     """.format(
-        hermetic_setup = hermetic_tools.run_setup,
+        hermetic_setup = hermetic_tools.setup,
         nodiff_update = ctx.executable.nodiff_update.short_path,
         abi_definition = ctx.file.abi_definition_stg.short_path,
         diff = ctx.executable.diff.short_path,

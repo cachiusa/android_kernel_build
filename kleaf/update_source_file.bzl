@@ -22,7 +22,7 @@ def _update_source_file_impl(ctx):
     # --no-perms because generated files usually have exec bit set, which
     # we don't want in source files.
     hermetic_tools = hermetic_toolchain.get(ctx)
-    script = hermetic_tools.run_setup + """
+    script = hermetic_tools.setup + """
         rsync --copy-links --no-perms --times {src} $(readlink -m {dst})
     """.format(
         src = ctx.file.src.short_path,

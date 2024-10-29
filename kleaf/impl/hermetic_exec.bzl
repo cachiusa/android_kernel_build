@@ -19,14 +19,14 @@ load("//build/kernel/kleaf/impl:hermetic_toolchain.bzl", "hermetic_toolchain")
 
 visibility("//build/kernel/kleaf/...")
 
-def _hermetic_exec_toolchain_run_setup_impl(ctx):
+def _hermetic_exec_toolchain_setup_impl(ctx):
     hermetic_tools = hermetic_toolchain.get(ctx)
-    run_setup_sh = ctx.actions.declare_file("{}/run_setup.sh".format(ctx.label.name))
-    ctx.actions.write(run_setup_sh, hermetic_tools.run_setup, is_executable = True)
-    return DefaultInfo(files = depset([run_setup_sh]))
+    setup_sh = ctx.actions.declare_file("{}/setup.sh".format(ctx.label.name))
+    ctx.actions.write(setup_sh, hermetic_tools.setup, is_executable = True)
+    return DefaultInfo(files = depset([setup_sh]))
 
-_hermetic_exec_toolchain_run_setup = rule(
-    implementation = _hermetic_exec_toolchain_run_setup_impl,
+_hermetic_exec_toolchain_setup = rule(
+    implementation = _hermetic_exec_toolchain_setup_impl,
     toolchains = [hermetic_toolchain.type],
 )
 
@@ -61,8 +61,8 @@ def hermetic_exec_target(
     # Not using a global target here because it is hard to be referred to
     # in pre_script below, especially when this macro is invoked in another
     # repository.
-    _hermetic_exec_toolchain_run_setup(
-        name = name + "_hermetic_exec_toolchain_run_setup",
+    _hermetic_exec_toolchain_setup(
+        name = name + "_hermetic_exec_toolchain_setup",
     )
 
     _hermetic_exec_toolchain_deps(
@@ -74,12 +74,12 @@ def hermetic_exec_target(
 
     # data may not be a list (it may be a select()), so use a explicit expr
     data = data + [
-        name + "_hermetic_exec_toolchain_run_setup",
+        name + "_hermetic_exec_toolchain_setup",
         name + "_hermetic_exec_toolchain_deps",
     ]
 
     pre_script = """
-        . $(rootpath {name}_hermetic_exec_toolchain_run_setup)
+        . $(rootpath {name}_hermetic_exec_toolchain_setup)
     """.format(name = name)
 
     rule(
