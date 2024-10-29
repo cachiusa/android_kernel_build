@@ -768,7 +768,7 @@ def update_microdroid_kernel():
   short_branch = branch.removeprefix("aosp_kernel-common-")
   output_dir = os.environ["ANDROID_BUILD_TOP"]
   base_dir = os.path.join(output_dir, "packages", "modules", "Virtualization",
-                          "microdroid", "kernel", short_branch)
+                          "guest", "kernel", short_branch)
 
   for arch in "arm64", "x86_64":
     arch_suffix = "aarch64" if arch == "arm64" else arch
