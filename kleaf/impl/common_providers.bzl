@@ -64,11 +64,6 @@ KernelEnvInfo = provider(
         "tools": """A [depset](https://bazel.build/extending/depsets) of tools associated with
             the execution platform.""",
         "setup": "setup script to initialize the environment",
-        "run_env": """Optional `KernelEnvInfo` to initialize the environment for `bazel run`.
-
-For `kernel_env`, the script only provides a bare-minimum environment after `source build.config`,
-without actually modifying any variables suitable for a proper kernel build.
-""",
         "toolchains": "See KernelEnvToolchainsInfo",
     },
 )

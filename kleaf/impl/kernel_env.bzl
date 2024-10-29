@@ -355,18 +355,10 @@ def _kernel_env_impl(ctx):
         setup_inputs.append(kconfig_ext)
     setup_inputs += dtstree_srcs
 
-    run_env = _get_run_env(
-        ctx,
-        srcs,
-        toolchains,
-        set_kernel_dir_ret = set_kernel_dir_ret,
-    )
-
     env_info = KernelEnvInfo(
         inputs = depset(setup_inputs),
         tools = depset(setup_tools, transitive = setup_transitive_tools),
         setup = setup,
-        run_env = run_env,
         toolchains = toolchains,
     )
     return [
@@ -385,16 +377,28 @@ def _kernel_env_impl(ctx):
         DefaultInfo(files = depset([out_file])),
     ]
 
-def get_env_info_setup_command(hermetic_tools_setup, build_utils_sh, env_setup_script):
+def get_env_info_setup_command(
+        hermetic_tools_setup,
+        build_utils_sh,
+        env_setup_script):
     """Returns text for KernelEnvInfo.setup"""
 
     return """{hermetic_tools_setup}
-        source {build_utils_sh}
-        # source the build environment
-        source {env_setup_script}
+
+        if [ -n "${{BUILD_WORKSPACE_DIRECTORY}}" ] || [ "${{BAZEL_TEST}}" = "1" ]; then
+            source {build_utils_sh_short}
+            # source the build environment
+            source {env_setup_script_short}
+        else
+            source {build_utils_sh}
+            # source the build environment
+            source {env_setup_script}
+        fi
     """.format(
         hermetic_tools_setup = hermetic_tools_setup,
+        build_utils_sh_short = build_utils_sh.short_path,
         build_utils_sh = build_utils_sh.path,
+        env_setup_script_short = env_setup_script.short_path,
         env_setup_script = env_setup_script.path,
     )
 
@@ -418,14 +422,22 @@ def _get_env_setup_cmds(ctx):
         # hermetic_base for hermetic tools, relative to execroot. This is
         # handled separately from bin_dir because hermetic_tools has a transition
         # attached to it.
-        KLEAF_HERMETIC_BASE=${{KLEAF_HERMETIC_BASE:-{hermetic_base}}}
+        if [ -n "${{BUILD_WORKSPACE_DIRECTORY}}" ] || [ "${{BAZEL_TEST}}" = "1" ]; then
+            KLEAF_HERMETIC_BASE=${{KLEAF_HERMETIC_BASE:-{run_hermetic_base}}}
+        else
+            KLEAF_HERMETIC_BASE=${{KLEAF_HERMETIC_BASE:-{hermetic_base}}}
+        fi
 
         # bin_dir for Kleaf repository, relative to execroot
         # This is:
         # - either bazel-out/k8-fastbuild/bin if @kleaf is the root module;
         # - or bazel-out/k8-fastbuild/bin/external/kleaf (or some variations of it)
         #   if @kleaf is a dependent module
-        KLEAF_BIN_DIR_AND_WORKSPACE_ROOT="{bin_dir}${{KLEAF_REPO_WORKSPACE_ROOT:+/$KLEAF_REPO_WORKSPACE_ROOT}}"
+        if [ -n "${{BUILD_WORKSPACE_DIRECTORY}}" ] || [ "${{BAZEL_TEST}}" = "1" ]; then
+            KLEAF_BIN_DIR_AND_WORKSPACE_ROOT="${{KLEAF_REPO_WORKSPACE_ROOT}}"
+        else
+            KLEAF_BIN_DIR_AND_WORKSPACE_ROOT="{bin_dir}${{KLEAF_REPO_WORKSPACE_ROOT:+/$KLEAF_REPO_WORKSPACE_ROOT}}"
+        fi
 
         # Root of Kleaf repository (under execroot aka PWD)
         # This is:
@@ -434,6 +446,7 @@ def _get_env_setup_cmds(ctx):
         KLEAF_REPO_DIR="$PWD${{KLEAF_REPO_WORKSPACE_ROOT:+/$KLEAF_REPO_WORKSPACE_ROOT}}"
     """.format(
         hermetic_base = hermetic_tools.internal_hermetic_base,
+        run_hermetic_base = hermetic_tools.internal_run_hermetic_base,
         bin_dir = ctx.bin_dir.path,
         kleaf_repo_workspace_root = kleaf_repo_workspace_root,
     )
@@ -555,65 +568,6 @@ def _get_make_verbosity_command(ctx):
             """
 
     return command
-
-def _get_run_env(ctx, srcs, toolchains, set_kernel_dir_ret):
-    """Returns setup script for execution phase.
-
-    Unlike the setup script for regular builds, this doesn't modify variables from build.config for
-    a proper build, e.g.:
-
-    - It doesn't respect `MAKE_JOBS`
-    - It doesn't set `KCONFIG_EXT_PREFIX` or `dtstree`
-    - It doesn't set `SOURCE_DATE_EPOCH` or scmversion properly
-    """
-
-    toolchains = kernel_toolchains_utils.get(ctx)
-    hermetic_tools = hermetic_toolchain.get(ctx)
-
-    setup = hermetic_tools.setup
-    if ctx.attr._debug_annotate_scripts[BuildSettingInfo].value:
-        setup += debug.trap()
-    setup += _get_make_verbosity_command(ctx)
-
-    setup += """
-        # create a build environment
-          source {build_utils_sh}
-          export BUILD_CONFIG={build_config}
-          {set_kernel_dir_cmd}
-
-        # Silence "git: command not found" and "date: bad date @"
-          export SOURCE_DATE_EPOCH=0
-          {set_arch_cmd}
-          source {setup_env}
-          {set_ndk_triple_cmd}
-        # Variables from resolved toolchain
-          {toolchains_setup_env_var_cmd}
-    """.format(
-        build_utils_sh = ctx.file._build_utils_sh.short_path,
-        build_config = ctx.file.build_config.short_path,
-        set_kernel_dir_cmd = set_kernel_dir_ret.run_cmd,
-        set_arch_cmd = _get_set_arch_cmd(ctx),
-        setup_env = ctx.file.setup_env.short_path,
-        set_ndk_triple_cmd = _get_set_ndk_triple_cmd(),
-        toolchains_setup_env_var_cmd = toolchains.kernel_setup_env_var_cmd,
-    )
-    tools = [
-        ctx.file.setup_env,
-        ctx.file._build_utils_sh,
-    ]
-    transitive_tools = [
-        toolchains.all_files,
-        hermetic_tools.deps,
-    ]
-    inputs = srcs + [
-        ctx.file.build_config,
-    ]
-
-    return KernelEnvInfo(
-        setup = setup,
-        inputs = depset(inputs),
-        tools = depset(tools, transitive = transitive_tools),
-    )
 
 def _kernel_env_additional_attrs():
     return dicts.add(

@@ -743,15 +743,15 @@ def _kernel_config_impl(ctx):
     )
 
     config_script_ret = _get_config_script(
-        run_env = ctx.attr.env[KernelEnvInfo].run_env,
+        env_info = ctx.attr.env[KernelEnvInfo],
         defconfig_info = defconfig_info,
         pre_defconfig_fragment_files = ctx.files.pre_defconfig_fragments,
     )
     config_script_runfiles = ctx.runfiles(
         files = inputs,
         transitive_files = depset(transitive = transitive_inputs + [
-            ctx.attr.env[KernelEnvInfo].run_env.inputs,
-            ctx.attr.env[KernelEnvInfo].run_env.tools,
+            ctx.attr.env[KernelEnvInfo].inputs,
+            ctx.attr.env[KernelEnvInfo].tools,
             config_script_ret.inputs,
         ]),
     )
@@ -776,14 +776,14 @@ def _kernel_config_impl(ctx):
 
 def _get_config_script_impl(
         subrule_ctx,
-        run_env,
+        env_info,
         defconfig_info,
         pre_defconfig_fragment_files):
     """Handles config.sh.
 
     Args:
         subrule_ctx: subrule_ctx
-        run_env: from kernel_env[KernelEnvInfo].run_env
+        env_info: kernel_env[KernelEnvInfo]
         defconfig_info: the DefconfigInfo from attr defconfig
         pre_defconfig_fragment_files: list of files of pre_defconfig_fragments
     """
@@ -814,7 +814,7 @@ def _get_config_script_impl(
             [step_return.tools for step_return in step_returns],
         ))
 
-    script = run_env.setup
+    script = env_info.setup
 
     # TODO(b/254348147): Support ncurses for hermetic tools
     script += """

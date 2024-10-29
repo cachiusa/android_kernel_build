@@ -51,6 +51,9 @@ Like `run_setup` but preserves original `PATH`. Assumes `run_setup` is already c
         "internal_hermetic_base": """**IMPLEMENTATION DETAIL; DO NOT USE.**
 
 Path to hermetic tools relative to execroot""",
+        "internal_run_hermetic_base": """**IMPLEMENTATION DETAIL; DO NOT USE.**
+
+Short path to hermetic tools relative to execroot""",
     },
 )
 
@@ -152,6 +155,7 @@ def _hermetic_tools_internal_impl(ctx):
         run_setup = run_setup,
         run_additional_setup = run_additional_setup,
         internal_hermetic_base = hermetic_base,
+        internal_run_hermetic_base = hermetic_base_short,
     )
 
     infos = [
