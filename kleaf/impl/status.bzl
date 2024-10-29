@@ -20,8 +20,21 @@ See https://bazel.build/docs/user-manual#workspace-status-command
 visibility("//build/kernel/kleaf/...")
 
 def _get_status_cmd(_ctx, status_file, var):
-    return """ (while read -r name value; do if [ "$name" = "{var}" ]; then echo "$value"; fi; done < {status}) """.format(
-        status = status_file.path,
+    return """ ( (
+        if [ -n "${{BUILD_WORKSPACE_DIRECTORY}}" ] || [ "${{BAZEL_TEST}}" = "1" ]; then
+            cat {status_short_path}
+        else
+            cat {status_path}
+        fi
+    ) | (
+        while read -r name value; do
+            if [ "$name" = "{var}" ]; then
+                echo "$value"
+            fi
+        done
+    ) ) """.format(
+        status_path = status_file.path,
+        status_short_path = status_file.short_path,
         var = var,
     )
 
