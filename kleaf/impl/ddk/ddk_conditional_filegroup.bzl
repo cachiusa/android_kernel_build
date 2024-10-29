@@ -176,7 +176,7 @@ def flatten_conditional_srcs(
         **kwargs: additional kwargs to internal rules
 
     Returns:
-        A list of targets to be palced in srcs
+        A list of targets to be placed in srcs
     """
 
     if not conditional_srcs:
