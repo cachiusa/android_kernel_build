@@ -109,7 +109,6 @@ def _get_config_env(ctx):
     env_setup_command = """
         KLEAF_REPO_WORKSPACE_ROOT={kleaf_repo_workspace_root}
         KLEAF_HERMETIC_BASE={hermetic_base}
-        KLEAF_FIX_KERNEL_DIR=1
     """.format(
         kleaf_repo_workspace_root = Label(":kernel_filegroup.bzl").workspace_root,
         hermetic_base = hermetic_tools.internal_hermetic_base,
