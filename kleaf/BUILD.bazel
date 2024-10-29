@@ -321,6 +321,13 @@ label_flag(
     visibility = ["//visibility:public"],
 )
 
+# Additional unsafe headers to add to GKI kernel build
+label_flag(
+    name = "user_ddk_unsafe_headers",
+    build_setting_default = "//build/kernel/kleaf/impl:empty_filegroup",
+    visibility = ["//visibility:public"],
+)
+
 # Flag to enable/disable BTF debug information.
 # Value is one of the following: default, enable, disable
 string_flag(
