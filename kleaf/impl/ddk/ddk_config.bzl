@@ -328,7 +328,36 @@ def _get_config_script_impl(
         export HOSTCFLAGS="${{HOSTCFLAGS}} --sysroot="
         export HOSTLDFLAGS="${{HOSTLDFLAGS}} --sysroot="
 
-        menucommand="${{1:-savedefconfig}}"
+        usage() {{
+            echo "usage: tools/bazel run {label} -- [--stdout] [<menucommand>]" >&2
+        }}
+
+        KLEAF_DDK_CONFIG_EMIT_STDOUT=
+        menucommand=
+        while [[ $# -gt 0 ]]; do
+            case "$1" in
+            --stdout)
+                KLEAF_DDK_CONFIG_EMIT_STDOUT=1
+                shift
+                ;;
+            -*)
+                usage
+                exit 1
+                ;;
+            *)
+                if [ -n "$menucommand" ]; then
+                    usage
+                    exit 1
+                fi
+                menucommand="$1"
+                shift
+                ;;
+            esac
+        done
+        if [ -z "$menucommand" ]; then
+            menucommand="${{1:-savedefconfig}}"
+        fi
+
         if ! [[ "${{menucommand}}" =~ .*config ]]; then
             echo "Invalid command ${{menucommand}}. Must be *config." >&2
             exit 1
@@ -354,23 +383,32 @@ def _get_config_script_impl(
     """.format(
         out_dir = out_dir.short_path,
         kconfig_ext_cmd = main_action_ret.kconfig_ext_step.cmd,
+        label = subrule_ctx.label,
     )
     if src_defconfig:
         script += """
             KCONFIG_CONFIG=${{new_config}} ${{KERNEL_DIR}}/scripts/kconfig/merge_config.sh -m {src_defconfig} ${{changed_config}} > /dev/null
-            sort_config ${{new_config}} > $(realpath {src_defconfig})
-            echo "Updated $(realpath {src_defconfig})"
+            if [ "${{KLEAF_DDK_CONFIG_EMIT_STDOUT}}" = 1 ]; then
+                sort_config ${{new_config}}
+            else
+                sort_config ${{new_config}} > $(realpath {src_defconfig})
+                echo "Updated $(realpath {src_defconfig})"
+            fi
         """.format(
             src_defconfig = src_defconfig.short_path,
         )
     else:
         script += """
-            sorted_new_fragment=$(mktemp)
-            sort_config ${{new_config}} > ${{sorted_new_fragment}}
-            echo "ERROR: Unable to update any file because defconfig is not set." >&2
-            echo "    Please manually set the defconfig attribute of {label} to a file containing" >&2
-            echo "    ${{sorted_new_fragment}}" >&2
-            # Intentionally not delete sorted_new_fragment
+            if [ "${{KLEAF_DDK_CONFIG_EMIT_STDOUT}}" = 1 ]; then
+                sort_config ${{new_config}}
+            else
+                sorted_new_fragment=$(mktemp)
+                sort_config ${{new_config}} > ${{sorted_new_fragment}}
+                echo "ERROR: Unable to update any file because defconfig is not set." >&2
+                echo "    Please manually set the defconfig attribute of {label} to a file containing" >&2
+                echo "    ${{sorted_new_fragment}}" >&2
+                # Intentionally not delete sorted_new_fragment
+            fi
             exit 1
         """.format(
             label = str(subrule_ctx.label).removesuffix("_config"),

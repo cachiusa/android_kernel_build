@@ -69,6 +69,21 @@ class DdkMenuconfigTest(unittest.TestCase):
             "The defconfig file should not change content with olddefconfig"
         )
 
+    def test_stdout(self):
+        actual = subprocess.check_output(
+            [arguments.ddk_config_exec, "--stdout", "olddefconfig"], text=True)
+        expected = self.backup_symlink.read_text()
+
+        # The actual file is intentionally not in the correct order so we
+        # can check here that it is actually updated.
+        self.assertNotEqual(actual, expected,
+                            "The defconfig file is not updated")
+        self.assertCountEqual(
+            self._non_empty_lines(actual),
+            self._non_empty_lines(expected),
+            "The defconfig file should not change content with olddefconfig"
+        )
+
 
 if __name__ == "__main__":
     arguments, unknown = load_arguments()
