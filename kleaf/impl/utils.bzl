@@ -476,6 +476,11 @@ def _eval_restore_out_dir_cmd():
 def _setup_serialized_env_cmd(serialized_env_info, restore_out_dir_cmd):
     """Returns a command that sets up `KernelSerializedEnvInfo`.
 
+    The provided command line has a shebang at the first line, so in most cases when
+    setup_serialized_env_cmd is at the beginning, the user doesn't have to add a shebang. However,
+    if setup_serialized_env_cmd is not at the beginning of a script or a command line, the user
+    should manually add the shebang if necessary.
+
     Args:
         serialized_env_info: `KernelSerializedEnvInfo`
         restore_out_dir_cmd: The command to restore value of `OUT_DIR`.
