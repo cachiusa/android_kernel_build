@@ -635,6 +635,29 @@ class DdkWorkspaceSetupTest(KleafIntegrationTestBase):
             return
         self._run_ddk_workspace_setup_test(kleaf_repo, self.ddk_workspace)
 
+    def test_build_kernel_at_root_module(self):
+        """Tests that kernel_build() at the root module is still functional.
+
+        See b/375647893"""
+        kleaf_repo = self.ddk_workspace / "external/kleaf"
+        if not arguments.mount_spec:
+            common_build = pathlib.Path(self._common()) / "BUILD.bazel"
+            self.restore_file_after_test(common_build)
+            # pylint: disable=line-too-long
+            shutil.copy(
+                "build/kernel/kleaf/tests/integration_test/ddk_workspace_test/fake_common.BUILD",
+                common_build)
+            mount_spec = {
+                self.real_kleaf_repo: kleaf_repo,
+                self.real_kleaf_repo / self._common(): self.ddk_workspace / "forked_common",
+            }
+            self._unshare_mount_run(mount_spec=mount_spec, link_spec=LinkSpec())
+            return
+        self._run_ddk_workspace_setup_test(
+            kleaf_repo,
+            ddk_workspace=self.ddk_workspace,
+            build_targets=["//forked_common:fake_device"])
+
     def test_setup_with_local_prebuilts(self):
         """Tests that init_ddk --prebuilts_dir & --local works."""
         if not arguments.mount_spec:
@@ -720,7 +743,21 @@ class DdkWorkspaceSetupTest(KleafIntegrationTestBase):
                                       local: bool = True,
                                       url_fmt: str | None = None,
                                       build_id: str | None = None,
-                                      sync: bool | None = None):
+                                      sync: bool | None = None,
+                                      build_targets: Iterable[str] = ()):
+        """Tests a DDKv2 workspace setup.
+
+        Args:
+            kleaf_repo: path to @kleaf module.
+            ddk_workspace: path to root of workspace.
+            prebuilts_dir: See init_ddk.py
+            local: See init_ddk.py
+            url_fmt: See init_ddk.py
+            build_id: See init_ddk.py
+            sync: See init_ddk.py
+            build_targets: If not empty, build the given list of targets below
+                the workspace. Otherwise run build tests.
+        """
         # kleaf_repo relative to ddk_workspace
         kleaf_repo_rel = self._force_relative_to(
             kleaf_repo, ddk_workspace)
@@ -777,8 +814,12 @@ class DdkWorkspaceSetupTest(KleafIntegrationTestBase):
         # Switch base kernel when using prebuilts
         if prebuilts_dir:
             args.append("--//tests:kernel=@gki_prebuilts//kernel_aarch64")
-        args.append("//tests")
-        self._check_call("test", args, cwd=ddk_workspace)
+        if build_targets:
+            args.extend(build_targets)
+            self._check_call("build", args, cwd=ddk_workspace)
+        else:
+            args.append("//tests")
+            self._check_call("test", args, cwd=ddk_workspace)
 
         # Delete generated files
         self._check_call("clean", ["--expunge"], cwd=ddk_workspace)
