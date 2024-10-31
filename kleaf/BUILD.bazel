@@ -590,6 +590,14 @@ label_flag(
     visibility = ["//visibility:public"],
 )
 
+# Whether --gki_build_config_fragment is NOT set
+# Note: this does not cover the case when the filegroup is empty.
+config_setting(
+    name = "gki_build_config_fragment_is_unset",
+    flag_values = {":gki_build_config_fragment": "//build/kernel/kleaf/impl:empty_filegroup"},
+    visibility = ["//visibility:public"],
+)
+
 # Command-line option that adds to kernel_build.defconfig_fragments.
 # See kernel_build.defconfig_fragments for description, restrictions, and
 # conventions.

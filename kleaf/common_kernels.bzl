@@ -239,7 +239,10 @@ def common_kernel(
         ],
         build_config = name + "_build_config",
         makefile = makefile,
-        check_defconfig = "minimized",
+        check_defconfig = select({
+            Label("//build/kernel/kleaf:gki_build_config_fragment_is_unset"): "minimized",
+            "//conditions:default": "disabled",
+        }),
         defconfig = defconfig,
         post_defconfig_fragments = post_defconfig_fragments,
         enable_interceptor = enable_interceptor,
