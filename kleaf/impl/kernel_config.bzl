@@ -525,10 +525,19 @@ _post_defconfig = subrule(
 
 def _check_dot_config_against_defconfig_impl(
         _subrule_ctx,
+        check_defconfig_attr_value,
         defconfig_info,
         pre_defconfig_fragment_files,
         post_defconfig_fragment_files):
     """Checks .config against defconfig and fragments."""
+
+    if check_defconfig_attr_value == "disabled":
+        return StepInfo(
+            inputs = depset(),
+            cmd = "",
+            outputs = [],
+            tools = [],
+        )
 
     check_defconfig_step = None
     transitive_inputs = []
@@ -615,6 +624,7 @@ def _kernel_config_impl(ctx):
     if not check_defconfig_minimized_ret.cmd:
         step_returns.append(
             _check_dot_config_against_defconfig(
+                check_defconfig_attr_value = ctx.attr.check_defconfig,
                 defconfig_info = defconfig_info,
                 pre_defconfig_fragment_files = ctx.files.pre_defconfig_fragments,
                 post_defconfig_fragment_files = [],
@@ -631,6 +641,7 @@ def _kernel_config_impl(ctx):
             post_defconfig_fragment_files = ctx.files.post_defconfig_fragments,
         ),
         _check_dot_config_against_defconfig(
+            check_defconfig_attr_value = ctx.attr.check_defconfig,
             defconfig_info = DefconfigInfo(file = None, make_target = None),
             pre_defconfig_fragment_files = [],
             post_defconfig_fragment_files = ctx.files.post_defconfig_fragments,
