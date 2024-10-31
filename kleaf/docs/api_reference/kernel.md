@@ -229,6 +229,25 @@ It works by matching undefined symbols from one module with exported symbols fro
 | <a id="dependency_graph_extractor-kernel_modules"></a>kernel_modules |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 
 
+<a id="dtb_image"></a>
+
+## dtb_image
+
+<pre>
+dtb_image(<a href="#dtb_image-name">name</a>, <a href="#dtb_image-srcs">srcs</a>)
+</pre>
+
+Build `dtb` image.
+
+**ATTRIBUTES**
+
+
+| Name  | Description | Type | Mandatory | Default |
+| :------------- | :------------- | :------------- | :------------- | :------------- |
+| <a id="dtb_image-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
+| <a id="dtb_image-srcs"></a>srcs |  DTB sources to add to the dtb image   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+
+
 <a id="dtbo"></a>
 
 ## dtbo
@@ -745,9 +764,9 @@ When included in a `copy_to_dist_dir` rule, this rule copies a `super_unsparsed.
 ## vendor_boot_image
 
 <pre>
-vendor_boot_image(<a href="#vendor_boot_image-name">name</a>, <a href="#vendor_boot_image-deps">deps</a>, <a href="#vendor_boot_image-outs">outs</a>, <a href="#vendor_boot_image-initramfs">initramfs</a>, <a href="#vendor_boot_image-kernel_build">kernel_build</a>, <a href="#vendor_boot_image-mkbootimg">mkbootimg</a>, <a href="#vendor_boot_image-ramdisk_compression">ramdisk_compression</a>,
-                  <a href="#vendor_boot_image-ramdisk_compression_args">ramdisk_compression_args</a>, <a href="#vendor_boot_image-unpack_ramdisk">unpack_ramdisk</a>, <a href="#vendor_boot_image-vendor_boot_name">vendor_boot_name</a>, <a href="#vendor_boot_image-vendor_ramdisk_binaries">vendor_ramdisk_binaries</a>,
-                  <a href="#vendor_boot_image-vendor_ramdisk_dev_nodes">vendor_ramdisk_dev_nodes</a>)
+vendor_boot_image(<a href="#vendor_boot_image-name">name</a>, <a href="#vendor_boot_image-deps">deps</a>, <a href="#vendor_boot_image-outs">outs</a>, <a href="#vendor_boot_image-dtb_image">dtb_image</a>, <a href="#vendor_boot_image-initramfs">initramfs</a>, <a href="#vendor_boot_image-kernel_build">kernel_build</a>, <a href="#vendor_boot_image-mkbootimg">mkbootimg</a>,
+                  <a href="#vendor_boot_image-ramdisk_compression">ramdisk_compression</a>, <a href="#vendor_boot_image-ramdisk_compression_args">ramdisk_compression_args</a>, <a href="#vendor_boot_image-unpack_ramdisk">unpack_ramdisk</a>, <a href="#vendor_boot_image-vendor_boot_name">vendor_boot_name</a>,
+                  <a href="#vendor_boot_image-vendor_ramdisk_binaries">vendor_ramdisk_binaries</a>, <a href="#vendor_boot_image-vendor_ramdisk_dev_nodes">vendor_ramdisk_dev_nodes</a>)
 </pre>
 
 Build `vendor_boot` or `vendor_kernel_boot` image.
@@ -760,6 +779,7 @@ Build `vendor_boot` or `vendor_kernel_boot` image.
 | <a id="vendor_boot_image-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
 | <a id="vendor_boot_image-deps"></a>deps |  Additional dependencies to build boot images.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="vendor_boot_image-outs"></a>outs |  A list of output files that will be installed to `DIST_DIR` when `build_boot_images` in `build/kernel/build_utils.sh` is executed.<br><br>Unlike `kernel_images`, you must specify the list explicitly.   | List of strings | optional |  `[]`  |
+| <a id="vendor_boot_image-dtb_image"></a>dtb_image |  A dtb.img to packaged. If this is set, then *.dtb from `kernel_build` are ignored.<br><br>See [`dtb_image`](#dtb_image).   | <a href="https://bazel.build/concepts/labels">Label</a> | optional |  `None`  |
 | <a id="vendor_boot_image-initramfs"></a>initramfs |  The [`initramfs`](#initramfs).   | <a href="https://bazel.build/concepts/labels">Label</a> | optional |  `None`  |
 | <a id="vendor_boot_image-kernel_build"></a>kernel_build |  The [`kernel_build`](#kernel_build).   | <a href="https://bazel.build/concepts/labels">Label</a> | required |  |
 | <a id="vendor_boot_image-mkbootimg"></a>mkbootimg |  mkbootimg.py script which builds boot.img. Only used if `build_boot`. If `None`, default to `//tools/mkbootimg:mkbootimg.py`. NOTE: This overrides `MKBOOTIMG_PATH`.   | <a href="https://bazel.build/concepts/labels">Label</a> | optional |  `"@kleaf//tools/mkbootimg:mkbootimg.py"`  |
