@@ -128,7 +128,7 @@ def kernel_build(
         pre_defconfig_fragments = None,
         post_defconfig_fragments = None,
         defconfig_fragments = None,
-        check_defconfig_minimized = None,
+        check_defconfig = None,
         page_size = None,
         pack_module_env = None,
         sanitizers = None,
@@ -490,6 +490,7 @@ def kernel_build(
             For mixed builds (`base_kernel` is set), this is usually set to the `defconfig`
             of the `base_kernel`, e.g. `//common:arch/arm64/configs/gki_defconfig`.
 
+            If `check_defconfig` is not `disabled`,
             Items must be present in the intermediate `.config` before `post_defconfig_fragments`
             are applied. See `build/kernel/kleaf/docs/kernel_config.md` for details.
 
@@ -522,6 +523,7 @@ def kernel_build(
             **NOTE**: **Order matters**, unlike `post_defconfig_fragments`. If there are conflicting
             items, later items overrides earlier items.
 
+            If `check_defconfig` is not `disabled`,
             Items must be present in the intermediate `.config` before `post_defconfig_fragments`
             are applied. See `build/kernel/kleaf/docs/kernel_config.md` for details.
         post_defconfig_fragments: A list of fragments that are applied to the defconfig
@@ -541,14 +543,21 @@ def kernel_build(
             to `POST_DEFCONFIG_CMDS`. If you had `PRE_DEFCONFIG_CMDS` applying fragments in your
             build configs, consider using `pre_defconfig_fragments` instead.
 
+            If `check_defconfig` is not `disabled`,
             Items must be present in the final `.config`. See
             `build/kernel/kleaf/docs/kernel_config.md` for details.
         defconfig_fragments: **Deprecated**. Same as `post_defconfig_fragments`.
-        check_defconfig_minimized: If `True`, checks `.config` against the result of
+        check_defconfig: Default is `match`.
+
+            If `disabled`, no check is performed.
+
+            If `match`, checks `.config` against the `defconfig`, `pre_defconfig_fragments`
+            and ` post_defconfig_fragments`.
+
+            If `minimized`, checks `.config` against the result of
             `make savedefconfig` right after `make defconfig`, but before
             `post_defconfig_fragments` are applied.
-
-            This can be set to true **only if** `defconfig` is set and `pre_defconfig_fragments`
+            This can be set to `minimized` **only if** `defconfig` is set and `pre_defconfig_fragments`
             is not set.
         page_size: Default is `"default"`. Page size of the kernel build.
 
@@ -761,7 +770,7 @@ WARNING: {}: defconfig_fragments is deprecated; use post_defconfig_fragments ins
         defconfig = defconfig,
         pre_defconfig_fragments = pre_defconfig_fragments,
         post_defconfig_fragments = post_defconfig_fragments,
-        check_defconfig_minimized = check_defconfig_minimized,
+        check_defconfig = check_defconfig,
         **internal_kwargs
     )
 

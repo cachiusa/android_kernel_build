@@ -49,9 +49,9 @@ def _check_defconfig_minimized_impl(
         subrule_ctx,
         defconfig_info,
         pre_defconfig_fragment_files,
-        attr_value):
+        check_defconfig_attr_value):
     """Checks that defconfig matches the result of savedefconfig. """
-    if not attr_value:
+    if check_defconfig_attr_value != "minimized":
         return StepInfo(
             inputs = depset(),
             cmd = "",
@@ -65,7 +65,7 @@ def _check_defconfig_minimized_impl(
         if defconfig_info:
             defconfig = defconfig_info.file.path if defconfig_info.file else defconfig_info.make_target
 
-        fail("""{kernel_build_label}: check_defconfig_minimized=True requires the following:
+        fail("""{kernel_build_label}: check_defconfig="minimized" requires the following:
 - defconfig is set and not phony_defconfig (but it is {defconfig})
 - pre_defconfig_fragments is not set (but it is {pre_defconfig_fragment_files})
 """.format(
@@ -603,7 +603,7 @@ def _kernel_config_impl(ctx):
     ]
 
     check_defconfig_minimized_ret = _check_defconfig_minimized(
-        attr_value = ctx.attr.check_defconfig_minimized,
+        check_defconfig_attr_value = ctx.attr.check_defconfig,
         defconfig_info = defconfig_info,
         pre_defconfig_fragment_files = ctx.files.pre_defconfig_fragments,
     )
@@ -1026,7 +1026,11 @@ kernel_config = rule(
             doc = "**post** defconfig fragments",
             allow_files = True,
         ),
-        "check_defconfig_minimized": attr.bool(doc = "Checks defconfig against savedefconfig"),
+        "check_defconfig": attr.string(
+            doc = "minimized: Checks defconfig against savedefconfig. match: check values only.",
+            default = "match",
+            values = ["disabled", "minimized", "match"],
+        ),
         "_config_is_stamp": attr.label(default = "//build/kernel/kleaf:config_stamp"),
         "_debug_print_scripts": attr.label(default = "//build/kernel/kleaf:debug_print_scripts"),
     } | _kernel_config_additional_attrs(),

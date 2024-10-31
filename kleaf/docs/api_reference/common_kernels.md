@@ -7,13 +7,12 @@ Functions that are useful in the common kernel package (usually `//common`).
 ## common_kernel
 
 <pre>
-common_kernel(<a href="#common_kernel-name">name</a>, <a href="#common_kernel-outs">outs</a>, <a href="#common_kernel-build_config">build_config</a>, <a href="#common_kernel-makefile">makefile</a>, <a href="#common_kernel-arch">arch</a>, <a href="#common_kernel-visibility">visibility</a>, <a href="#common_kernel-toolchain_version">toolchain_version</a>,
-              <a href="#common_kernel-check_defconfig_minimized">check_defconfig_minimized</a>, <a href="#common_kernel-defconfig">defconfig</a>, <a href="#common_kernel-enable_interceptor">enable_interceptor</a>, <a href="#common_kernel-kmi_symbol_list">kmi_symbol_list</a>,
-              <a href="#common_kernel-additional_kmi_symbol_lists">additional_kmi_symbol_lists</a>, <a href="#common_kernel-trim_nonlisted_kmi">trim_nonlisted_kmi</a>, <a href="#common_kernel-kmi_symbol_list_strict_mode">kmi_symbol_list_strict_mode</a>,
-              <a href="#common_kernel-kmi_symbol_list_add_only">kmi_symbol_list_add_only</a>, <a href="#common_kernel-module_implicit_outs">module_implicit_outs</a>, <a href="#common_kernel-protected_exports_list">protected_exports_list</a>,
-              <a href="#common_kernel-protected_modules_list">protected_modules_list</a>, <a href="#common_kernel-gki_system_dlkm_modules">gki_system_dlkm_modules</a>, <a href="#common_kernel-make_goals">make_goals</a>, <a href="#common_kernel-abi_definition_stg">abi_definition_stg</a>,
-              <a href="#common_kernel-kmi_enforced">kmi_enforced</a>, <a href="#common_kernel-build_gki_artifacts">build_gki_artifacts</a>, <a href="#common_kernel-gki_boot_img_sizes">gki_boot_img_sizes</a>, <a href="#common_kernel-page_size">page_size</a>, <a href="#common_kernel-deprecation">deprecation</a>,
-              <a href="#common_kernel-ddk_headers_archive">ddk_headers_archive</a>, <a href="#common_kernel-ddk_module_headers">ddk_module_headers</a>, <a href="#common_kernel-extra_dist">extra_dist</a>)
+common_kernel(<a href="#common_kernel-name">name</a>, <a href="#common_kernel-outs">outs</a>, <a href="#common_kernel-build_config">build_config</a>, <a href="#common_kernel-makefile">makefile</a>, <a href="#common_kernel-arch">arch</a>, <a href="#common_kernel-visibility">visibility</a>, <a href="#common_kernel-toolchain_version">toolchain_version</a>, <a href="#common_kernel-defconfig">defconfig</a>,
+              <a href="#common_kernel-enable_interceptor">enable_interceptor</a>, <a href="#common_kernel-kmi_symbol_list">kmi_symbol_list</a>, <a href="#common_kernel-additional_kmi_symbol_lists">additional_kmi_symbol_lists</a>, <a href="#common_kernel-trim_nonlisted_kmi">trim_nonlisted_kmi</a>,
+              <a href="#common_kernel-kmi_symbol_list_strict_mode">kmi_symbol_list_strict_mode</a>, <a href="#common_kernel-kmi_symbol_list_add_only">kmi_symbol_list_add_only</a>, <a href="#common_kernel-module_implicit_outs">module_implicit_outs</a>,
+              <a href="#common_kernel-protected_exports_list">protected_exports_list</a>, <a href="#common_kernel-protected_modules_list">protected_modules_list</a>, <a href="#common_kernel-gki_system_dlkm_modules">gki_system_dlkm_modules</a>, <a href="#common_kernel-make_goals">make_goals</a>,
+              <a href="#common_kernel-abi_definition_stg">abi_definition_stg</a>, <a href="#common_kernel-kmi_enforced">kmi_enforced</a>, <a href="#common_kernel-build_gki_artifacts">build_gki_artifacts</a>, <a href="#common_kernel-gki_boot_img_sizes">gki_boot_img_sizes</a>, <a href="#common_kernel-page_size">page_size</a>,
+              <a href="#common_kernel-deprecation">deprecation</a>, <a href="#common_kernel-ddk_headers_archive">ddk_headers_archive</a>, <a href="#common_kernel-ddk_module_headers">ddk_module_headers</a>, <a href="#common_kernel-extra_dist">extra_dist</a>)
 </pre>
 
 Macro for an Android Common Kernel.
@@ -64,7 +63,6 @@ Usually, for ABI monitoring to be fully turned on, you should set:
 | <a id="common_kernel-arch"></a>arch |  See [kernel_build.arch](kernel.md#kernel_build-arch)   |  `None` |
 | <a id="common_kernel-visibility"></a>visibility |  default visibility for some targets instantiated with this macro   |  `None` |
 | <a id="common_kernel-toolchain_version"></a>toolchain_version |  See [kernel_build.toolchain_version](kernel.md#kernel_build-toolchain_version)   |  `None` |
-| <a id="common_kernel-check_defconfig_minimized"></a>check_defconfig_minimized |  See [kernel_build.check_defconfig_minimized](kernel.md#kernel_build-check_defconfig_minimized)   |  `None` |
 | <a id="common_kernel-defconfig"></a>defconfig |  See [kernel_build.defconfig](kernel.md#kernel_build-defconfig)   |  `None` |
 | <a id="common_kernel-enable_interceptor"></a>enable_interceptor |  See [kernel_build.enable_interceptor](kernel.md#kernel_build-enable_interceptor)   |  `None` |
 | <a id="common_kernel-kmi_symbol_list"></a>kmi_symbol_list |  See [kernel_build.kmi_symbol_list](kernel.md#kernel_build-kmi_symbol_list)   |  `None` |

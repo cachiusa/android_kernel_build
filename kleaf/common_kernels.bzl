@@ -65,7 +65,6 @@ def common_kernel(
         arch = None,
         visibility = None,
         toolchain_version = None,
-        check_defconfig_minimized = None,
         defconfig = None,
         post_defconfig_fragments = None,
         enable_interceptor = None,
@@ -130,7 +129,6 @@ def common_kernel(
         build_config: See [kernel_build.build_config](kernel.md#kernel_build-build_config)
         makefile: See [kernel_build.makefile](kernel.md#kernel_build-makefile)
         toolchain_version: See [kernel_build.toolchain_version](kernel.md#kernel_build-toolchain_version)
-        check_defconfig_minimized: See [kernel_build.check_defconfig_minimized](kernel.md#kernel_build-check_defconfig_minimized)
         defconfig: See [kernel_build.defconfig](kernel.md#kernel_build-defconfig)
         post_defconfig_fragments: See [kernel_build.post_defconfig_fragments](kernel.md#kernel_build-post_defconfig_fragments)
         enable_interceptor: See [kernel_build.enable_interceptor](kernel.md#kernel_build-enable_interceptor)
@@ -162,7 +160,6 @@ def common_kernel(
         arch = arch,
         build_config = build_config,
         makefile = makefile,
-        check_defconfig_minimized = check_defconfig_minimized,
         defconfig = defconfig,
         post_defconfig_fragments = post_defconfig_fragments,
         toolchain_version = toolchain_version,
@@ -242,7 +239,7 @@ def common_kernel(
         ],
         build_config = name + "_build_config",
         makefile = makefile,
-        check_defconfig_minimized = check_defconfig_minimized,
+        check_defconfig = "minimized",
         defconfig = defconfig,
         post_defconfig_fragments = post_defconfig_fragments,
         enable_interceptor = enable_interceptor,
