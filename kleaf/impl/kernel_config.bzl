@@ -75,8 +75,8 @@ def _check_defconfig_minimized_impl(
         ))
 
     cmd = """
-        if [[ "${{POST_DEFCONFIG_CMDS}}" =~ check_defconfig_minimized ]]; then
-            echo "ERROR: Please delete check_defconfig_minimized from POST_DEFCONFIG_CMDS." >&2
+        if [[ "${{POST_DEFCONFIG_CMDS}}" =~ check_defconfig ]]; then
+            echo "ERROR: Please delete check_defconfig from POST_DEFCONFIG_CMDS." >&2
             exit 1
         fi
 
