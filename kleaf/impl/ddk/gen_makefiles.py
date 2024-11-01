@@ -99,13 +99,10 @@ def _gen_makefile(
 
 def _merge_directories(
         output_makefiles: pathlib.Path,
-        submodule_makefile_dir: pathlib.Path,
-        ddk_markers: set[pathlib.Path],
-    ):
+        submodule_makefile_dir: pathlib.Path):
     """Merges the content of submodule_makefile_dir into output_makefiles.
 
     File of the same relative path are concatenated.
-    ddk_markers is modified during this keep track of where it' been copied.
     """
 
     if not submodule_makefile_dir.is_dir():
@@ -120,10 +117,6 @@ def _merge_directories(
             with open(dst_path, "a") as dst, \
                     open(submodule_file, "r") as src:
                 if dst_path.suffix in (".c", ".rs", ".h"):
-                    if dst_path.name == "ddk_marker.c":
-                        if file_rel in ddk_markers:
-                            continue
-                        ddk_markers.add(file_rel)
                     dst.write(f"// {submodule_file}\n")
                 elif dst_path.suffix == ".S":
                     dst.write(f"/* {submodule_file} */\n")
@@ -177,25 +170,11 @@ def gen_ddk_makefile(
             **kwargs
         )
 
-    ddk_markers: set[pathlib.Path] = set()
     for submodule_makefile_dir in submodule_makefiles:
-        _merge_directories(
-            output_makefiles, submodule_makefile_dir, ddk_markers)
+        _merge_directories(output_makefiles, submodule_makefile_dir)
     _append_submodule_linux_include_dirs(output_makefiles,
                                          linux_include_dirs,
                                          submodule_linux_include_dirs)
-
-
-def _get_ddk_marker(
-    output_dir: pathlib.Path,
-) -> pathlib.Path:
-    os.makedirs(output_dir, exist_ok=True)
-    ddk_marker = output_dir / "ddk_marker.c"
-    ddk_marker.write_text(textwrap.dedent("""\
-        #include <linux/module.h>
-        MODULE_INFO(built_with, "DDK");
-        """))
-    return ddk_marker
 
 
 def _gen_ddk_makefile_for_module(
@@ -251,13 +230,9 @@ def _gen_ddk_makefile_for_module(
     # Output cflags file path
     out_cflags_path = output_makefiles / out_cflags_subpath
 
-    # For modinfo tagging
-    _handle_ddk_marker(rel_srcs, kernel_module_out,
-        out_cflags_path, package / out_cflags_subpath.parent)
-
     copts = json.load(copt_file) if copt_file else None
 
-    with open(kbuild, "w") as out_file, open(out_cflags_path, "a") as out_cflags:
+    with open(kbuild, "w") as out_file, open(out_cflags_path, "w") as out_cflags:
         out_file.write(_get_license_str())
         out_file.write(textwrap.dedent(f"""\
             # Build {package / kernel_module_out}
@@ -364,33 +339,6 @@ def _check_srcs_valid(rel_srcs: list[dict[str, Any]],
             [str(e) for e in source_files_with_name_of_kernel_module],
             kernel_module_out)
 
-
-def _handle_ddk_marker(
-        rel_srcs: list[dict[str, Any]],
-        kernel_module_out: pathlib.Path,
-        out_cflags_path: pathlib.Path,
-        package: pathlib.Path
-):
-    rel_srcs_flat = _get_rel_srcs_flat(rel_srcs)
-    # Avoid possible collisions if there is an existing ddk_marker.c file.
-    #  or if the output .ko is named ddk_marker.ko
-    if any([src.name == "ddk_marker.c" for src in rel_srcs_flat]):
-        die("ddk_marker.c is not allowed to be a source file")
-    if kernel_module_out.with_suffix(".c") == "ddk_marker.c":
-        die("ddk_marker.ko is not allowed to be the output file")
-
-    ddk_marker = _get_ddk_marker(out_cflags_path.parent)
-    # Depending on the number of files, choose an appropriate path for tagging.
-    if len(rel_srcs_flat) > 1:
-        rel_srcs.append(
-            {"files": [kernel_module_out.parent / ddk_marker.name]})
-    else:
-        with open(out_cflags_path, "w") as out_cflags:
-            out_cflags.write("\n")
-            out_cflags.write(textwrap.dedent(f"""\
-                    -include $(ROOT_DIR)/{str(package / ddk_marker.name)}
-                """))
-            out_cflags.write("\n")
 
 def _handle_src(
         src: pathlib.Path,
