@@ -64,7 +64,7 @@ def prebuilt_transitioned_tool(name, src, **kwargs):
         name = name,
         src = src,
         target_platform = select({
-            Label("//build/kernel/kleaf:musl_prebuilts_is_true"): Label("//build/kernel/kleaf/impl:host_musl"),
+            Label("//build/kernel/kleaf:musl_prebuilts_is_true"): Label("//build/kernel/kleaf/impl/platforms:host_musl"),
             "//conditions:default": None,
         }),
         **kwargs
@@ -82,7 +82,7 @@ def transitioned_tool_from_sources(name, src, **kwargs):
         name = name,
         src = src,
         target_platform = select({
-            Label("//build/kernel/kleaf:musl_tools_from_sources_is_true"): Label("//build/kernel/kleaf/impl:host_musl"),
+            Label("//build/kernel/kleaf:musl_tools_from_sources_is_true"): Label("//build/kernel/kleaf/impl/platforms:host_musl"),
             "//conditions:default": None,
         }),
         **kwargs
@@ -124,7 +124,7 @@ def prebuilt_transitioned_files(name, srcs, **kwargs):
         name = name,
         srcs = srcs,
         target_platform = select({
-            Label("//build/kernel/kleaf:musl_prebuilts_is_true"): Label("//build/kernel/kleaf/impl:host_musl"),
+            Label("//build/kernel/kleaf:musl_prebuilts_is_true"): Label("//build/kernel/kleaf/impl/platforms:host_musl"),
             "//conditions:default": None,
         }),
         **kwargs

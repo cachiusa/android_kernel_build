@@ -496,18 +496,6 @@ alias(
 )
 
 # Local build platforms
-## host constraints + musl
-## Note that this does not respect --host_platform.
-platform(
-    name = "host_musl",
-    constraint_values = [
-        "//build/kernel/kleaf/platforms/libc:musl",
-    ],
-    parents = ["@platforms//host"],
-    visibility = [
-        "//build/kernel:__subpackages__",
-    ],
-)
 
 ## host constraints + glibc
 ## Note that this does not respect --host_platform and kernel_build.toolchain_version.

@@ -12,7 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# --config=musl_platform: Experimental: Switch --host_platform to use musl libc.
-#    See build/kernel/kleaf/docs/musl.md
-
-common:musl_platform --host_platform=//build/kernel/kleaf/impl/platforms:host_musl
+# Local build platforms
+## host constraints + musl
+## Note that this does not respect --host_platform.
+platform(
+    name = "host_musl",
+    constraint_values = [
+        "//build/kernel/kleaf/platforms/libc:musl",
+    ],
+    parents = ["@platforms//host"],
+    visibility = [
+        "//build/kernel:__subpackages__",
+    ],
+)
