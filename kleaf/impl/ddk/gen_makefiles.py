@@ -198,8 +198,8 @@ def _get_ddk_marker(
     os.makedirs(output_dir, exist_ok=True)
     ddk_marker = output_dir / "ddk_marker.c"
     ddk_marker.write_text(textwrap.dedent("""\
-        #include <linux/module.h>
-        MODULE_INFO(built_with, "DDK");
+        #include <linux/compiler.h>
+        static const char __UNIQUE_ID(built_with)[] __used __section(".modinfo") __aligned(1) = "built_with=DDK";
         """))
     return ddk_marker
 

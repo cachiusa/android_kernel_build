@@ -206,6 +206,15 @@ def ddk_made_test(name):
     )
     tests.append(name + "_submodules_from_subdirs_test")
 
+    # From https://docs.kernel.org/core-api/printk-basics.html
+    _ddk_module_test_make(
+        name = name + "_use_printk",
+        kernel_build = "//common:kernel_aarch64",
+        out = "use_printk.ko",
+        srcs = ["use_printk.c"],
+    )
+    tests.append(name + "_use_printk")
+
     native.test_suite(
         name = name,
         tests = tests,
