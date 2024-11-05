@@ -140,46 +140,23 @@ def _config_lto_impl(_subrule_ctx, lto_config_flag):
 
 _config_lto = subrule(implementation = _config_lto_impl)
 
-def _config_trim_impl(subrule_ctx, trim_attr_value, raw_kmi_symbol_list_file, *, _debug, _kgdb):
+def _config_trim_impl(subrule_ctx, trim_attr_value, raw_kmi_symbol_list_file):
     """Return configs for trimming.
 
     Args:
         subrule_ctx: subrule_ctx
         trim_attr_value: value of trim_nonlisted_kmi_utils.get_value(ctx)
         raw_kmi_symbol_list_file: the raw_kmi_symbol_list file
-        _debug: --debug
-        _kgdb: --kgdb
     Returns:
         a list of arguments to `scripts/config`
     """
     if trim_attr_value and not raw_kmi_symbol_list_file:
         fail("{}: trim_nonlisted_kmi is set but raw_kmi_symbol_list is empty.".format(subrule_ctx.label))
 
-    if not trim_attr_value:
-        return []
-
-    if _kgdb[BuildSettingInfo].value:
-        # buildifier: disable=print
-        print("\nWARNING: {this_label}: Symbol trimming \
-              IGNORED because --kgdb is set!".format(this_label = subrule_ctx.label))
-        return []
-
-    if _debug[BuildSettingInfo].value:
-        # buildifier: disable=print
-        print("\nWARNING: {this_label}: Symbol trimming \
-              IGNORED because --debug is set!".format(this_label = subrule_ctx.label))
-        return []
-
-    return [
-        _config.enable("TRIM_UNUSED_KSYMS"),
-    ]
+    return []
 
 _config_trim = subrule(
     implementation = _config_trim_impl,
-    attrs = {
-        "_debug": attr.label(default = "//build/kernel/kleaf:debug"),
-        "_kgdb": attr.label(default = "//build/kernel/kleaf:kgdb"),
-    },
 )
 
 def _config_symbol_list_impl(_subrule_ctx, raw_kmi_symbol_list_file):

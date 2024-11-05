@@ -44,16 +44,16 @@ load(":abi/base_kernel_utils.bzl", "base_kernel_utils")
 load(":abi/force_add_vmlinux_utils.bzl", "force_add_vmlinux_utils")
 load(":abi/trim_nonlisted_kmi_utils.bzl", "TRIM_NONLISTED_KMI_ATTR_NAME")
 load(":compile_commands_utils.bzl", "compile_commands_utils")
+load(":file_selector.bzl", "FileSelectorInfo")
 load(":kernel_toolchains_utils.bzl", "kernel_toolchains_utils")
 load(":kgdb.bzl", "kgdb")
 
 visibility("//build/kernel/kleaf/...")
 
-def _trim_attrs_raw():
-    return [TRIM_NONLISTED_KMI_ATTR_NAME]
-
 def _trim_attrs():
-    return {TRIM_NONLISTED_KMI_ATTR_NAME: attr.bool()}
+    return {TRIM_NONLISTED_KMI_ATTR_NAME: attr.label(
+        providers = [FileSelectorInfo],
+    )}
 
 def _lto_attrs_raw():
     return ["lto"]
@@ -191,14 +191,13 @@ def _kernel_env_get_config_tags(
 def _kernel_env_get_base_config_tags(ctx):
     """Returns dict to compute `OUT_DIR_SUFFIX` for `kernel_env`."""
     attr_to_label = _kernel_env_config_settings_raw()
-    raw_attrs = _trim_attrs_raw() + _lto_attrs_raw()
 
     ret = {}
     for attr_name in attr_to_label:
         attr_target = getattr(ctx.attr, attr_name)
         attr_val = attr_target[BuildSettingInfo].value
         ret[str(attr_target.label)] = attr_val
-    for attr_name in raw_attrs:
+    for attr_name in _lto_attrs_raw():
         attr_val = getattr(ctx.attr, attr_name)
         ret[attr_name] = attr_val
 
@@ -214,15 +213,7 @@ _PROGRESS_MESSAGE_SETTINGS_MAP = {
     "kmi_symbol_list_strict_mode": "",  # Hide because not interesting
 }
 
-_PROGRESS_MESSAGE_ATTRS_MAP = {
-    TRIM_NONLISTED_KMI_ATTR_NAME: "trim",
-}
-
-_PROGRESS_MESSAGE_INTERESTING_ATTRS = [
-    TRIM_NONLISTED_KMI_ATTR_NAME,
-]
-
-def _create_progress_message_item(attr_key, attr_val, map, interesting_list):
+def _create_progress_message_item(attr_key, attr_val, map):
     print_attr_key = map.get(attr_key, attr_key)
 
     # In _SETTINGS_MAP but value is set to empty to ignore it
@@ -230,7 +221,7 @@ def _create_progress_message_item(attr_key, attr_val, map, interesting_list):
         return None
 
     # Empty values that are not interesting enough are dropped
-    if not attr_val and attr_key not in interesting_list:
+    if not attr_val:
         return None
     if attr_val == True:
         return print_attr_key
@@ -266,19 +257,17 @@ def _get_progress_message_note(
             attr_label_name,
             attr_val,
             _PROGRESS_MESSAGE_SETTINGS_MAP,
-            [],
         )
         if not item:
             continue
         ret.append(item)
 
-    for attr_name in _trim_attrs_raw() + _lto_attrs_raw():
+    for attr_name in _lto_attrs_raw():
         attr_val = getattr(ctx.attr, attr_name)
         item = _create_progress_message_item(
             attr_name,
             attr_val,
-            _PROGRESS_MESSAGE_ATTRS_MAP,
-            _PROGRESS_MESSAGE_INTERESTING_ATTRS,
+            {},
         )
         if not item:
             continue

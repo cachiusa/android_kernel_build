@@ -16,7 +16,14 @@
 
 load("@bazel_skylib//lib:sets.bzl", "sets")
 
-visibility("//build/kernel/kleaf/impl/...")
+visibility("//build/kernel/kleaf/...")
+
+FileSelectorInfo = provider(
+    "Provides info from a file_selector",
+    fields = {
+        "value": "The selected value",
+    },
+)
 
 def _file_selector_common_impl(subrule_ctx, *, selector, files):
     files_depsets = []
@@ -37,7 +44,10 @@ _file_selector_common = subrule(
 
 def _file_selector_impl(ctx):
     selector = ctx.attr.first_selector or ctx.attr.second_selector or ctx.attr.third_selector
-    return _file_selector_common(selector = selector, files = ctx.attr.files)
+    return [
+        _file_selector_common(selector = selector, files = ctx.attr.files),
+        FileSelectorInfo(value = selector),
+    ]
 
 file_selector = rule(
     implementation = _file_selector_impl,
@@ -152,13 +162,22 @@ user should expand files or use a filegroup directly.
 
 def _file_selector_bool_impl(ctx):
     # equivalent to: if first_selector != None (using default value). Same below.
-    if ctx.attr.first_selector_1 == ctx.attr.first_selector_2:
-        return _file_selector_common(selector = str(ctx.attr.first_selector_1), files = ctx.attr.files)
-    if ctx.attr.second_selector_1 == ctx.attr.second_selector_2:
-        return _file_selector_common(selector = str(ctx.attr.second_selector_1), files = ctx.attr.files)
-    if ctx.attr.third_selector_1 == ctx.attr.third_selector_2:
-        return _file_selector_common(selector = str(ctx.attr.third_selector_1), files = ctx.attr.files)
-    return _file_selector_common(selector = "", files = ctx.attr.files)
+
+    for (selector_1, selector_2) in (
+        (ctx.attr.first_selector_1, ctx.attr.first_selector_2),
+        (ctx.attr.second_selector_1, ctx.attr.second_selector_2),
+        (ctx.attr.third_selector_1, ctx.attr.third_selector_2),
+    ):
+        if selector_1 == selector_2:
+            return [
+                _file_selector_common(selector = str(selector_1), files = ctx.attr.files),
+                FileSelectorInfo(value = selector_1),
+            ]
+
+    return [
+        _file_selector_common(selector = "", files = ctx.attr.files),
+        FileSelectorInfo(value = None),
+    ]
 
 _file_selector_bool = rule(
     implementation = _file_selector_bool_impl,

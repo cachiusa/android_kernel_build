@@ -624,8 +624,6 @@ def kernel_build(
     if arch == None:
         arch = "arm64"
 
-    trim_nonlisted_kmi = trim_nonlisted_kmi_utils.selected_attr(trim_nonlisted_kmi)
-
     internal_kwargs = dict(kwargs)
     internal_kwargs.pop("visibility", None)
 
@@ -674,6 +672,9 @@ WARNING: {}: defconfig_fragments is deprecated; use post_defconfig_fragments ins
     # buildifier: disable=list-append
     post_defconfig_fragments += [trim_post_defconfig_fragment]
 
+    # Prevent accidental usage
+    trim_nonlisted_kmi = struct(message = "DO NOT USE ME! Use trim_post_defconfig_fragment instead.")
+
     toolchain_constraints = []
     if toolchain_version != None:
         # buildifier: disable=print
@@ -721,7 +722,7 @@ WARNING: {}: defconfig_fragments is deprecated; use post_defconfig_fragments ins
         dtstree = dtstree,
         srcs = srcs,
         kbuild_symtypes = kbuild_symtypes,
-        trim_nonlisted_kmi = trim_nonlisted_kmi,
+        trim_nonlisted_kmi = trim_post_defconfig_fragment,
         lto = lto,
         make_goals = make_goals,
         target_platform = name + "_platform_target",
@@ -771,7 +772,7 @@ WARNING: {}: defconfig_fragments is deprecated; use post_defconfig_fragments ins
         name = config_target_name,
         env = env_target_name,
         srcs = srcs,
-        trim_nonlisted_kmi = trim_nonlisted_kmi,
+        trim_nonlisted_kmi = trim_post_defconfig_fragment,
         raw_kmi_symbol_list = raw_kmi_symbol_list_target_name,
         module_signing_key = module_signing_key,
         system_trusted_key = system_trusted_key,
@@ -788,7 +789,7 @@ WARNING: {}: defconfig_fragments is deprecated; use post_defconfig_fragments ins
         config = config_target_name,
         srcs = srcs,
         outdir_tar_gz = modules_prepare_target_name + "/" + _MODULES_PREPARE_ARCHIVE,
-        trim_nonlisted_kmi = trim_nonlisted_kmi,
+        trim_nonlisted_kmi = trim_post_defconfig_fragment,
         force_generate_headers = modules_prepare_force_generate_headers,
         **internal_kwargs
     )
@@ -817,7 +818,7 @@ WARNING: {}: defconfig_fragments is deprecated; use post_defconfig_fragments ins
         src_protected_exports_list = protected_exports_list,
         src_protected_modules_list = protected_modules_list,
         src_kmi_symbol_list = kmi_symbol_list,
-        trim_nonlisted_kmi = trim_nonlisted_kmi,
+        trim_nonlisted_kmi = trim_post_defconfig_fragment,
         pack_module_env = pack_module_env,
         sanitizers = sanitizers,
         ddk_module_defconfig_fragments = ddk_module_defconfig_fragments,
@@ -1036,10 +1037,10 @@ def _get_trim_post_defconfig_fragment_target(
         kernel_build_name,
         kernel_build_trim_nonlisted_kmi,
         **internal_kwargs):
-    module_protection_target = kernel_build_name + "_defconfig_fragment_module_protection"
+    trim_target = kernel_build_name + "_defconfig_fragment_trim"
 
     file_selector_bool(
-        name = module_protection_target,
+        name = trim_target,
         first_selector = select({
             Label("//build/kernel/kleaf/impl:force_disable_trim_is_true"): False,
             Label("//build/kernel/kleaf:debug_is_true"): False,
@@ -1050,15 +1051,16 @@ def _get_trim_post_defconfig_fragment_target(
             "//conditions:default": None,
         }),
         second_selector = kernel_build_trim_nonlisted_kmi,
-        # When the value is not specified in the kernel_build rule, do nothing.
-        third_selector = True,
+        # When the value is not specified in the kernel_build rule, do nothing (the "" case)
+        third_selector = None,
         files = {
-            Label("//build/kernel/kleaf/impl/defconfig:gki_module_protection_disabled_defconfig"): "False",
-            Label("//build/kernel/kleaf/impl:empty_filegroup"): "True",
+            Label("//build/kernel/kleaf/impl/defconfig:notrim_defconfig"): "False",
+            Label("//build/kernel/kleaf/impl/defconfig:trim_defconfig"): "True",
+            Label("//build/kernel/kleaf/impl:empty_filegroup"): "",
         },
         **internal_kwargs
     )
-    return module_protection_target
+    return trim_target
 
 def _uniq(lst):
     """Deduplicates items in lst."""

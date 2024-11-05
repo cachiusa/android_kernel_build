@@ -22,7 +22,8 @@ exports_files([
     "arm64_64k_defconfig",
     "btf_debug_info_disabled_defconfig",
     "btf_debug_info_enabled_defconfig",
-    "gki_module_protection_disabled_defconfig",
+    "notrim_defconfig",
+    "trim_defconfig",
 ])
 
 [[
