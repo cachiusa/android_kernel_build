@@ -248,6 +248,9 @@ def _kernel_env_impl(ctx):
         bin_dir_and_workspace_root = ctx.bin_dir.path
 
     command += """
+          export DEPMOD=depmod
+          export DTC=$(command -v dtc)
+          export LLVM=1
         # create a build environment
           source {build_utils_sh}
           export BUILD_CONFIG={build_config}
