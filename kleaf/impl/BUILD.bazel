@@ -122,6 +122,7 @@ bzl_library(
         "platform_transition.bzl",
         "python.bzl",
         "raw_kmi_symbol_list.bzl",
+        "rustavailable.bzl",
         "scripts_config_arg_builder.bzl",
         "set_kernel_dir.bzl",
         "srcs_aspect.bzl",

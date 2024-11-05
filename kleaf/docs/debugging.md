@@ -191,3 +191,20 @@ approximate steps:
 6. Run commands from step 4 to get into sandboxed environment, then from step 5
    to have toolchain binaries in your path, and then from step 3 to reproduce
    compiler invocation.
+
+## Checking if Rust is available
+
+To check `make rustavailable`, run the following:
+
+```
+tools/bazel build --output_groups=rustavailable //common:kernel_aarch64
+```
+
+If Rust is available, you should see:
+
+```
+INFO: From Checking rustavailable:
+Rust is available!
+```
+
+Otherwise, a build error is raised indicating why is Rust not available.

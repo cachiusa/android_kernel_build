@@ -77,6 +77,7 @@ load(":kgdb.bzl", "kgdb")
 load(":kmi_symbol_list.bzl", _kmi_symbol_list = "kmi_symbol_list")
 load(":modules_prepare.bzl", "modules_prepare")
 load(":raw_kmi_symbol_list.bzl", "raw_kmi_symbol_list")
+load(":rustavailable.bzl", "rustavailable")
 load(":utils.bzl", "kernel_utils", "utils")
 
 visibility("//build/kernel/kleaf/...")
@@ -2139,6 +2140,14 @@ def _create_infos(
         gcno_dir = main_action_ret.gcno_dir,
     )
 
+    rustavailable_out = rustavailable(
+        serialized_env_info = ctx.attr.config[KernelSerializedEnvInfo],
+        inputs = depset(
+            transitive =
+                [target.files for target in ctx.attr.srcs] + [target.files for target in ctx.attr.deps],
+        ),
+    )
+
     output_group_kwargs = {}
     for d in all_output_files.values():
         output_group_kwargs.update({name: depset([file]) for name, file in d.items()})
@@ -2146,6 +2155,7 @@ def _create_infos(
     # TODO(b/291918087): Drop after common_kernels no longer use kernel_filegroup.
     #   These files should already be in kernel_filegroup_declaration.
     output_group_kwargs["modules_staging_archive"] = depset([modules_staging_archive])
+    output_group_kwargs["rustavailable"] = depset([rustavailable_out])
     output_group_info = OutputGroupInfo(**output_group_kwargs)
 
     kbuild_mixed_tree_files = all_output_files["outs"].values() + all_output_files["module_outs"].values()
@@ -2402,6 +2412,7 @@ _kernel_build = rule(
     toolchains = [hermetic_toolchain.type],
     subrules = [
         _get_dot_config,
+        rustavailable,
     ],
 )
 
