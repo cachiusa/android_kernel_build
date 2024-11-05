@@ -662,9 +662,17 @@ WARNING: {}: defconfig_fragments is deprecated; use post_defconfig_fragments ins
         kernel_build_arch = arch,
         kernel_build_page_size = page_size,
         kernel_build_sanitizers = sanitizers,
+        **internal_kwargs
+    )
+    trim_post_defconfig_fragment = _get_trim_post_defconfig_fragment_target(
+        kernel_build_name = name,
         kernel_build_trim_nonlisted_kmi = trim_nonlisted_kmi,
         **internal_kwargs
     )
+
+    # Do not use append because the returned value may not be a list.
+    # buildifier: disable=list-append
+    post_defconfig_fragments += [trim_post_defconfig_fragment]
 
     toolchain_constraints = []
     if toolchain_version != None:
@@ -934,7 +942,6 @@ def _get_post_defconfig_fragments(
         kernel_build_arch,
         kernel_build_page_size,
         kernel_build_sanitizers,
-        kernel_build_trim_nonlisted_kmi,
         **internal_kwargs):
     # Use a separate list to avoid .append on the provided object directly.
     # kernel_build_post_defconfig_fragments could be a list or a select() expression.
@@ -991,30 +998,6 @@ def _get_post_defconfig_fragments(
     )
     additional_fragments.append(page_size_target)
 
-    module_protection_target = kernel_build_name + "_defconfig_fragment_module_protection"
-
-    file_selector_bool(
-        name = module_protection_target,
-        first_selector = select({
-            Label("//build/kernel/kleaf/impl:force_disable_trim_is_true"): False,
-            Label("//build/kernel/kleaf:debug_is_true"): False,
-            Label("//build/kernel/kleaf:gcov_is_true"): False,
-            Label("//build/kernel/kleaf:kasan_is_true"): False,
-            Label("//build/kernel/kleaf:kcsan_is_true"): False,
-            Label("//build/kernel/kleaf:kgdb_is_true"): False,
-            "//conditions:default": None,
-        }),
-        second_selector = kernel_build_trim_nonlisted_kmi,
-        # When the value is not specified in the kernel_build rule, do nothing.
-        third_selector = True,
-        files = {
-            Label("//build/kernel/kleaf/impl/defconfig:gki_module_protection_disabled_defconfig"): "False",
-            Label("//build/kernel/kleaf/impl:empty_filegroup"): "True",
-        },
-        **internal_kwargs
-    )
-    additional_fragments.append(module_protection_target)
-
     kernel_build_sanitizer = "default"
     if kernel_build_sanitizers:
         kernel_build_sanitizer = kernel_build_sanitizers[0]
@@ -1048,6 +1031,34 @@ def _get_post_defconfig_fragments(
     # Do not call kernel_build_post_defconfig_fragments += ... to avoid
     # modifying the incoming object from kernel_build.post_defconfig_fragments.
     return kernel_build_post_defconfig_fragments + additional_fragments
+
+def _get_trim_post_defconfig_fragment_target(
+        kernel_build_name,
+        kernel_build_trim_nonlisted_kmi,
+        **internal_kwargs):
+    module_protection_target = kernel_build_name + "_defconfig_fragment_module_protection"
+
+    file_selector_bool(
+        name = module_protection_target,
+        first_selector = select({
+            Label("//build/kernel/kleaf/impl:force_disable_trim_is_true"): False,
+            Label("//build/kernel/kleaf:debug_is_true"): False,
+            Label("//build/kernel/kleaf:gcov_is_true"): False,
+            Label("//build/kernel/kleaf:kasan_is_true"): False,
+            Label("//build/kernel/kleaf:kcsan_is_true"): False,
+            Label("//build/kernel/kleaf:kgdb_is_true"): False,
+            "//conditions:default": None,
+        }),
+        second_selector = kernel_build_trim_nonlisted_kmi,
+        # When the value is not specified in the kernel_build rule, do nothing.
+        third_selector = True,
+        files = {
+            Label("//build/kernel/kleaf/impl/defconfig:gki_module_protection_disabled_defconfig"): "False",
+            Label("//build/kernel/kleaf/impl:empty_filegroup"): "True",
+        },
+        **internal_kwargs
+    )
+    return module_protection_target
 
 def _uniq(lst):
     """Deduplicates items in lst."""
