@@ -192,3 +192,16 @@ filegroup(
     }),
     visibility = ["//visibility:public"],
 )
+
+filegroup(
+    name = "lto",
+    srcs = select({
+        "//build/kernel/kleaf:lto_is_none": ["lto_none_defconfig"],
+        "//build/kernel/kleaf:lto_is_thin": ["lto_thin_defconfig"],
+        "//build/kernel/kleaf:lto_is_full": ["lto_full_defconfig"],
+        # --lto=fast falls back to --lto=none.
+        "//build/kernel/kleaf:lto_is_fast": ["lto_none_defconfig"],
+        "//build/kernel/kleaf:lto_is_default": [],
+    }),
+    visibility = ["//visibility:public"],
+)

@@ -28,19 +28,17 @@ mentioned here. In particular:
   builds.
 - --allow_undeclared_modules is not listed because it only affects artifact collection.
 - --preserve_cmd is not listed because it only affects artifact collection.
-- lto is in these lists because incremental builds with LTO changing causes incremental build
-  breakages; see (b/257288175)
 - The following is not listed because it is already handled by defconfig_fragments. See
   kernel_env.bzl, _handle_config_tags:
   - btf_debug_info
   - gcov
+  - lto (b/257288175)
   - trim_nonlisted_kmi
 """
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_skylib//lib:sets.bzl", "sets")
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
-load("//build/kernel/kleaf:constants.bzl", "LTO_VALUES")
 load(":abi/base_kernel_utils.bzl", "base_kernel_utils")
 load(":abi/force_add_vmlinux_utils.bzl", "force_add_vmlinux_utils")
 load(":compile_commands_utils.bzl", "compile_commands_utils")
@@ -48,15 +46,6 @@ load(":kernel_toolchains_utils.bzl", "kernel_toolchains_utils")
 load(":kgdb.bzl", "kgdb")
 
 visibility("//build/kernel/kleaf/...")
-
-def _lto_attrs_raw():
-    return ["lto"]
-
-def _lto_attrs():
-    # TODO(b/229662633): Default should be "full" to ignore values in
-    #   gki_defconfig. Instead of in gki_defconfig, default value of LTO
-    #   should be set in kernel_build() macro instead.
-    return {"lto": attr.string(values = LTO_VALUES, default = "default")}
 
 def _kernel_build_config_settings_raw():
     return dicts.add(
@@ -85,7 +74,7 @@ def _kernel_config_config_settings_raw():
     return kgdb.config_settings_raw()
 
 def _kernel_config_config_settings():
-    return _lto_attrs() | {
+    return {
         attr_name: attr.label(default = label)
         for attr_name, label in _kernel_config_config_settings_raw().items()
     }
@@ -104,7 +93,7 @@ def _kernel_env_config_settings_raw():
     )
 
 def _kernel_env_config_settings():
-    return _lto_attrs() | {
+    return {
         attr_name: attr.label(default = label)
         for attr_name, label in _kernel_env_config_settings_raw().items()
     }
@@ -188,9 +177,6 @@ def _kernel_env_get_base_config_tags(ctx):
         attr_target = getattr(ctx.attr, attr_name)
         attr_val = attr_target[BuildSettingInfo].value
         ret[str(attr_target.label)] = attr_val
-    for attr_name in _lto_attrs_raw():
-        attr_val = getattr(ctx.attr, attr_name)
-        ret[attr_name] = attr_val
 
     toolchains = kernel_toolchains_utils.get(ctx)
     ret["toolchain_host_sysroot"] = toolchains.host_sysroot
@@ -248,17 +234,6 @@ def _get_progress_message_note(
             attr_label_name,
             attr_val,
             _PROGRESS_MESSAGE_SETTINGS_MAP,
-        )
-        if not item:
-            continue
-        ret.append(item)
-
-    for attr_name in _lto_attrs_raw():
-        attr_val = getattr(ctx.attr, attr_name)
-        item = _create_progress_message_item(
-            attr_name,
-            attr_val,
-            {},
         )
         if not item:
             continue

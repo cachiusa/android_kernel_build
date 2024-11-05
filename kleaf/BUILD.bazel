@@ -27,8 +27,10 @@ load(":print_flags.bzl", "print_flags")
 string_flag(
     name = "lto",
     build_setting_default = "default",
+    deprecated_values = ["fast"],
     values = LTO_VALUES,
     visibility = ["//visibility:public"],
+    warn_message = "Use --lto=none instead of --lto=fast.",
 )
 
 # The final LTO setting is "default" (use defconfig value).

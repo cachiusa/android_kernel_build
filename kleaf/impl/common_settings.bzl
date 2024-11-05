@@ -76,7 +76,11 @@ def _string_flag_impl(ctx):
             ctx.attr.values,
         ))
 
-    if ctx.attr.build_setting_default != ctx.build_setting_value:
+    deprecated_values = ctx.attr.deprecated_values
+    if not deprecated_values:
+        deprecated_values = [value for value in ctx.attr.values if value != ctx.attr.build_setting_default]
+
+    if ctx.build_setting_value in deprecated_values:
         if ctx.attr.error_message:
             fail("{} has unsupported value {}. {}".format(
                 ctx.label,
@@ -102,5 +106,6 @@ string_flag = rule(
         "error_message": attr.string(),
         "warn_message": attr.string(),
         "values": attr.string_list(),
+        "deprecated_values": attr.string_list(),
     },
 )

@@ -93,53 +93,6 @@ _check_defconfig_minimized = subrule(
     implementation = _check_defconfig_minimized_impl,
 )
 
-def _config_lto_impl(_subrule_ctx, lto_config_flag):
-    """Return configs for LTO.
-
-    Args:
-        _subrule_ctx: subrule_ctx
-        lto_config_flag: value of lto attr
-    Returns:
-        a list of arguments to `scripts/config`
-    """
-
-    lto_configs = []
-
-    if lto_config_flag == "fast":
-        # buildifier: disable=print
-        print("\nWARNING: --lto=fast is deprecated. Falling back to none.")
-        lto_config_flag = "none"
-
-    if lto_config_flag == "none":
-        lto_configs += [
-            _config.disable("LTO_CLANG"),
-            _config.enable("LTO_NONE"),
-            _config.disable("LTO_CLANG_THIN"),
-            _config.disable("LTO_CLANG_FULL"),
-            _config.disable("THINLTO"),
-            _config.set_val("FRAME_WARN", 0),
-        ]
-    elif lto_config_flag == "thin":
-        lto_configs += [
-            _config.enable("LTO_CLANG"),
-            _config.disable("LTO_NONE"),
-            _config.enable("LTO_CLANG_THIN"),
-            _config.disable("LTO_CLANG_FULL"),
-            _config.enable("THINLTO"),
-        ]
-    elif lto_config_flag == "full":
-        lto_configs += [
-            _config.enable("LTO_CLANG"),
-            _config.disable("LTO_NONE"),
-            _config.disable("LTO_CLANG_THIN"),
-            _config.enable("LTO_CLANG_FULL"),
-            _config.disable("THINLTO"),
-        ]
-
-    return lto_configs
-
-_config_lto = subrule(implementation = _config_lto_impl)
-
 def _config_trim_impl(subrule_ctx, trim_attr_value, raw_kmi_symbol_list_file):
     """Return configs for trimming.
 
@@ -244,7 +197,6 @@ _check_trimming_disabled = subrule(
 
 def _reconfig_impl(
         _subrule_ctx,
-        lto_config_flag,
         trim_attr_value,
         raw_kmi_symbol_list_file,
         module_signing_key_file,
@@ -254,7 +206,6 @@ def _reconfig_impl(
 
     Args:
         _subrule_ctx: subrule_ctx
-        lto_config_flag: value of lto attr
         trim_attr_value: value of trim_nonlisted_kmi_utils.get_value(ctx)
         raw_kmi_symbol_list_file: the raw_kmi_symbol_list file
         module_signing_key_file: file of module_signing_key
@@ -267,9 +218,6 @@ def _reconfig_impl(
     configs = []
     apply_post_defconfig_fragments_cmd = ""
 
-    configs += _config_lto(
-        lto_config_flag = lto_config_flag,
-    )
     configs += _config_trim(
         trim_attr_value = trim_attr_value,
         raw_kmi_symbol_list_file = raw_kmi_symbol_list_file,
@@ -328,7 +276,6 @@ _reconfig = subrule(
     implementation = _reconfig_impl,
     subrules = [
         _check_trimming_disabled,
-        _config_lto,
         _config_trim,
         _config_symbol_list,
         _config_keys,
@@ -456,7 +403,6 @@ _make_defconfig = subrule(
 
 def _post_defconfig_impl(
         _subrule_ctx,
-        lto_config_flag,
         trim_attr_value,
         raw_kmi_symbol_list_file,
         module_signing_key_file,
@@ -466,7 +412,6 @@ def _post_defconfig_impl(
 
     Args:
         _subrule_ctx: subrule_ctx
-        lto_config_flag: value of lto attr
         trim_attr_value: value of trim_nonlisted_kmi_utils.get_value(ctx)
         raw_kmi_symbol_list_file: the raw_kmi_symbol_list file
         module_signing_key_file: file of module_signing_key
@@ -479,7 +424,6 @@ def _post_defconfig_impl(
     """
 
     reconfig_ret = _reconfig(
-        lto_config_flag = lto_config_flag,
         trim_attr_value = trim_attr_value,
         raw_kmi_symbol_list_file = raw_kmi_symbol_list_file,
         module_signing_key_file = module_signing_key_file,
@@ -610,7 +554,6 @@ def _kernel_config_impl(ctx):
 
     step_returns += [
         _post_defconfig(
-            lto_config_flag = ctx.attr.lto,
             trim_attr_value = trim_nonlisted_kmi_utils.get_value(ctx),
             raw_kmi_symbol_list_file = utils.optional_file(ctx.files.raw_kmi_symbol_list),
             module_signing_key_file = ctx.file.module_signing_key,
