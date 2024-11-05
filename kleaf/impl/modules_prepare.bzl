@@ -14,7 +14,6 @@
 
 """Runs `make modules_prepare` to prepare `$OUT_DIR` for modules."""
 
-load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load(":cache_dir.bzl", "cache_dir")
 load(
     ":common_providers.bzl",
@@ -23,7 +22,6 @@ load(
     "KernelSerializedEnvInfo",
 )
 load(":debug.bzl", "debug")
-load(":kernel_config_settings.bzl", "kernel_config_settings")
 load(":utils.bzl", "kernel_utils")
 
 visibility("//build/kernel/kleaf/...")
@@ -222,10 +220,7 @@ def modules_prepare_setup_command(
     return cmd
 
 def _modules_prepare_additional_attrs():
-    return dicts.add(
-        kernel_config_settings.of_modules_prepare(),
-        cache_dir.attrs(),
-    )
+    return cache_dir.attrs()
 
 modules_prepare = rule(
     doc = "Rule that runs `make modules_prepare` to prepare `$OUT_DIR` for modules.",

@@ -718,7 +718,6 @@ WARNING: {}: defconfig_fragments is deprecated; use post_defconfig_fragments ins
         dtstree = dtstree,
         srcs = srcs,
         kbuild_symtypes = kbuild_symtypes,
-        trim_nonlisted_kmi = trim_post_defconfig_fragment,
         lto = lto,
         make_goals = make_goals,
         target_platform = name + "_platform_target",
@@ -785,7 +784,6 @@ WARNING: {}: defconfig_fragments is deprecated; use post_defconfig_fragments ins
         config = config_target_name,
         srcs = srcs,
         outdir_tar_gz = modules_prepare_target_name + "/" + _MODULES_PREPARE_ARCHIVE,
-        trim_nonlisted_kmi = trim_post_defconfig_fragment,
         force_generate_headers = modules_prepare_force_generate_headers,
         **internal_kwargs
     )
@@ -2314,6 +2312,7 @@ def _kernel_build_impl(ctx):
 def _kernel_build_additional_attrs():
     return dicts.add(
         kernel_config_settings.of_kernel_build(),
+        trim_nonlisted_kmi_utils.attrs(),
         base_kernel_utils.non_config_attrs(),
         cache_dir.attrs(),
     )

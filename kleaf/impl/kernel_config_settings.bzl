@@ -34,6 +34,7 @@ mentioned here. In particular:
   kernel_env.bzl, _handle_config_tags:
   - btf_debug_info
   - gcov
+  - trim_nonlisted_kmi
 """
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
@@ -42,18 +43,11 @@ load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("//build/kernel/kleaf:constants.bzl", "LTO_VALUES")
 load(":abi/base_kernel_utils.bzl", "base_kernel_utils")
 load(":abi/force_add_vmlinux_utils.bzl", "force_add_vmlinux_utils")
-load(":abi/trim_nonlisted_kmi_utils.bzl", "TRIM_NONLISTED_KMI_ATTR_NAME")
 load(":compile_commands_utils.bzl", "compile_commands_utils")
-load(":file_selector.bzl", "FileSelectorInfo")
 load(":kernel_toolchains_utils.bzl", "kernel_toolchains_utils")
 load(":kgdb.bzl", "kgdb")
 
 visibility("//build/kernel/kleaf/...")
-
-def _trim_attrs():
-    return {TRIM_NONLISTED_KMI_ATTR_NAME: attr.label(
-        providers = [FileSelectorInfo],
-    )}
 
 def _lto_attrs_raw():
     return ["lto"]
@@ -63,9 +57,6 @@ def _lto_attrs():
     #   gki_defconfig. Instead of in gki_defconfig, default value of LTO
     #   should be set in kernel_build() macro instead.
     return {"lto": attr.string(values = LTO_VALUES, default = "default")}
-
-def _modules_prepare_config_settings():
-    return _trim_attrs()
 
 def _kernel_build_config_settings_raw():
     return dicts.add(
@@ -85,7 +76,7 @@ def _kernel_build_config_settings_raw():
     )
 
 def _kernel_build_config_settings():
-    return _trim_attrs() | {
+    return {
         attr_name: attr.label(default = label)
         for attr_name, label in _kernel_build_config_settings_raw().items()
     }
@@ -94,7 +85,7 @@ def _kernel_config_config_settings_raw():
     return kgdb.config_settings_raw()
 
 def _kernel_config_config_settings():
-    return _trim_attrs() | _lto_attrs() | {
+    return _lto_attrs() | {
         attr_name: attr.label(default = label)
         for attr_name, label in _kernel_config_config_settings_raw().items()
     }
@@ -113,7 +104,7 @@ def _kernel_env_config_settings_raw():
     )
 
 def _kernel_env_config_settings():
-    return _trim_attrs() | _lto_attrs() | {
+    return _lto_attrs() | {
         attr_name: attr.label(default = label)
         for attr_name, label in _kernel_env_config_settings_raw().items()
     }
@@ -290,7 +281,6 @@ kernel_config_settings = struct(
     of_kernel_build = _kernel_build_config_settings,
     of_kernel_config = _kernel_config_config_settings,
     of_kernel_env = _kernel_env_config_settings,
-    of_modules_prepare = _modules_prepare_config_settings,
     kernel_env_get_config_tags = _kernel_env_get_config_tags,
     get_progress_message_note = _get_progress_message_note,
 )

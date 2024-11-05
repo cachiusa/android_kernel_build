@@ -25,6 +25,12 @@ def _trim_nonlisted_kmi_get_value(ctx):
     """Returns the value of the real `trim_nonlisted_kmi` configuration."""
     return getattr(ctx.attr, TRIM_NONLISTED_KMI_ATTR_NAME)[FileSelectorInfo].value
 
+def _attrs():
+    return {TRIM_NONLISTED_KMI_ATTR_NAME: attr.label(
+        providers = [FileSelectorInfo],
+    )}
+
 trim_nonlisted_kmi_utils = struct(
     get_value = _trim_nonlisted_kmi_get_value,
+    attrs = _attrs,
 )
