@@ -413,11 +413,23 @@ KernelModuleDepInfo = provider(
 )
 
 ModuleSymversInfo = provider(
-    doc = "A provider that provides `Module.symvers` for `modpost`.",
+    doc = """A provider that provides `Module.symvers` for `modpost`.
+
+    This is  used for **external modules only** for correctly setting up these files.
+    """,
     fields = {
         "restore_paths": """A [depset](https://bazel.build/extending/depsets) of
             paths relative to `COMMON_OUT_DIR` where the `Module.symvers` files will be
             restored to by `KernelModuleSetupInfo`.""",
+    },
+)
+
+ModuleSymversFileInfo = provider(
+    doc = "A provider that provides generated `Module.symvers`",
+    fields = {
+        "module_symvers": """A [depset](https://bazel.build/extending/depsets) of
+            [`File`](https://bazel.build/rules/lib/File)s with generated
+            Module.symvers file.""",
     },
 )
 

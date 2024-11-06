@@ -51,6 +51,7 @@ load(
     "KernelSerializedEnvInfo",
     "KernelToolchainInfo",
     "KernelUnstrippedModulesInfo",
+    "ModuleSymversFileInfo",
 )
 load(":compile_commands_utils.bzl", "compile_commands_utils")
 load(
@@ -2220,6 +2221,9 @@ def _create_infos(
         # For kernel_build_test
         runfiles = ctx.runfiles(files = default_info_files),
     )
+    module_symvers_file_info = ModuleSymversFileInfo(
+        module_symvers = depset(main_action_ret.module_symvers_outputs),
+    )
 
     return [
         cmds_info,
@@ -2242,6 +2246,7 @@ def _create_infos(
         ctx.attr.config[KernelToolchainInfo],
         output_group_info,
         default_info,
+        module_symvers_file_info,
     ]
 
 def _kernel_build_impl(ctx):

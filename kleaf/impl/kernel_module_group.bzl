@@ -22,6 +22,7 @@ load(
     "KernelModuleInfo",
     "KernelModuleSetupInfo",
     "KernelUnstrippedModulesInfo",
+    "ModuleSymversFileInfo",
     "ModuleSymversInfo",
 )
 load(":ddk/ddk_headers.bzl", "DdkHeadersInfo", "ddk_headers_common_impl")
@@ -105,6 +106,13 @@ def _kernel_module_group_impl(ctx):
         ]),
     )
 
+    module_symvers_file_info = ModuleSymversFileInfo(
+        module_symvers = depset(transitive = [
+            target[ModuleSymversFileInfo].module_symvers
+            for target in targets
+        ]),
+    )
+
     ddk_headers_info = ddk_headers_common_impl(ctx.label, targets, [], [])
 
     cmds_info_srcs = [target[KernelCmdsInfo].srcs for target in targets]
@@ -128,6 +136,7 @@ def _kernel_module_group_impl(ctx):
         kernel_module_info,
         unstripped_modules_info,
         module_symvers_info,
+        module_symvers_file_info,
         ddk_headers_info,
         cmds_info,
         compile_commands_info,

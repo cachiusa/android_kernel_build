@@ -39,6 +39,7 @@ load(
     "KernelModuleSetupInfo",
     "KernelSerializedEnvInfo",
     "KernelUnstrippedModulesInfo",
+    "ModuleSymversFileInfo",
     "ModuleSymversInfo",
 )
 load(":compile_commands_utils.bzl", "compile_commands_utils")
@@ -701,6 +702,9 @@ def _kernel_module_impl(ctx):
                 compile_commands_with_vars = compile_commands_step.compile_commands_with_vars,
                 compile_commands_common_out_dir = compile_commands_step.compile_commands_common_out_dir,
             )]),
+        ),
+        ModuleSymversFileInfo(
+            module_symvers = depset([module_symvers]),
         ),
     ]
 

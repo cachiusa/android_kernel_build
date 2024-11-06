@@ -20,6 +20,7 @@ load(
     ":common_providers.bzl",
     "DdkIncludeInfo",
     "DdkSubmoduleInfo",
+    "ModuleSymversFileInfo",
     "ModuleSymversInfo",
 )
 load(":ddk/ddk_conditional_filegroup.bzl", "DdkConditionalFilegroupInfo")
@@ -433,6 +434,12 @@ def _makefiles_impl(ctx):
         ),
         ModuleSymversInfo(
             restore_paths = module_symvers_depset,
+        ),
+        ModuleSymversFileInfo(
+            module_symvers = depset(transitive = [
+                target[ModuleSymversFileInfo].module_symvers
+                for target in module_symvers_deps
+            ]),
         ),
         ddk_headers_info,
     ]
