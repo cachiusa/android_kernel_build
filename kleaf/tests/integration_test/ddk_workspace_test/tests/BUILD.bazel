@@ -20,11 +20,14 @@ filegroup(
     srcs = [
         "//out_of_tree:device_images",
     ] + select({
+        ":building_kernel_from_source": [
+            # Test that the device modules and images can be built.
+            "//in_tree:device_images",
+            # Test that full kernel dist can be built.
+            "@kleaf//common:kernel_aarch64_dist",
+        ],
         # If using prebuilts, we don't care about the tests against
         # the kernel built from source.
-        ":building_kernel_from_source": [
-            "//in_tree:device_images",
-        ],
         "//conditions:default": [],
     }),
 )
