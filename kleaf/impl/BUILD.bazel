@@ -509,6 +509,8 @@ platform(
     visibility = ["//visibility:private"],
 )
 
+# LINT.IfChange(platforms)
+
 # 32-bit
 platform(
     name = "android_arm",
@@ -552,6 +554,8 @@ platform(
         "@platforms//cpu:x86_64",
     ],
 )
+
+# LINT.ThenChange(/kleaf/platforms/config_settings/BUILD.bazel)
 
 python_runtime_files(
     name = "python_runtime_files",
