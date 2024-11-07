@@ -111,6 +111,13 @@ def load_arguments():
 
                             If set, this script always has exit code 0.
                        """)
+    group.add_argument("-i", "--interactive", action="store_true",
+                       help="""For DdkWorkspaceSetupTest, start an interactive
+                               shell in the unshare mount namespace before
+                               building anything.
+
+                               Don't run two interactive shells in parellel;
+                               your workspace might be wiped out.""")
     return parser.parse_known_args()
 
 
@@ -490,6 +497,8 @@ class KleafIntegrationTestBase(unittest.TestCase):
                          for arg in arguments.bazel_wrapper_args)
         test_args.append(f"--mount-spec={_serialize_mount_spec(mount_spec)}")
         test_args.append(f"--link-spec={_serialize_link_spec(link_spec)}")
+        if arguments.interactive:
+            test_args.append("--interactive")
         test_args.append(self.id().removeprefix("__main__."))
         args.append(" ".join(shlex.quote(str(test_arg))
                              for test_arg in test_args))
@@ -773,9 +782,12 @@ class DdkWorkspaceSetupTest(KleafIntegrationTestBase):
         # ddk_workspace, because the latter may be out of Git's version control.
         Exec.check_call(git_clean_args, cwd=self.ddk_workspace)
 
-        # Delete generated files at the end
-        self.addCleanup(Exec.check_call, git_clean_args,
-                        cwd=self.ddk_workspace)
+        # Don't call git clean in interactive mode. Be lenient about local
+        # changes that the developer made.
+        if not arguments.interactive:
+            # Delete generated files at the end
+            self.addCleanup(Exec.check_call, git_clean_args,
+                            cwd=self.ddk_workspace)
 
         self._mount(kleaf_repo)
 
@@ -807,6 +819,10 @@ class DdkWorkspaceSetupTest(KleafIntegrationTestBase):
             f"--kleaf_repo_rel={kleaf_repo_rel}",
             f"--ddk_workspace={ddk_workspace}",
         ])
+        if arguments.interactive:
+            # Ignore exit code from the interactive shell.
+            Exec.popen(["bash"], cwd=ddk_workspace).communicate()
+            self.skipTest("Tests are skipped in interactive mode")
 
         self._check_call("clean", ["--expunge"], cwd=ddk_workspace)
 
