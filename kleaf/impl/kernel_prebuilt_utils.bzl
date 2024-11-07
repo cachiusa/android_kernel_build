@@ -22,6 +22,7 @@ load(
     ":constants.bzl",
     "FILEGROUP_DEF_ARCHIVE_SUFFIX",
     "GKI_ARTIFACTS_AARCH64_OUTS",
+    "SIGNED_GKI_ARTIFACTS_ARCHIVE",
     "SYSTEM_DLKM_COMMON_OUTS",
     "UNSTRIPPED_MODULES_ARCHIVE",
 )
@@ -61,7 +62,7 @@ CI_TARGET_MAPPING = {
                 "remote_filename_fmt": "boot-img.tar.gz",
                 # The others can be found by extracting the archive, see gki_artifacts_prebuilts
             },
-            "signed/boot-img.tar.gz": {
+            SIGNED_GKI_ARTIFACTS_ARCHIVE: {
                 "target_suffix": "boot_img_archive_signed",
                 # Do not fail immediately if this file cannot be downloaded, because it does not
                 # exist for unsigned builds. A build error will be emitted by gki_artifacts_prebuilts
