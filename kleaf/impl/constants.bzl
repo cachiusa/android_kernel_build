@@ -48,3 +48,5 @@ UNSTRIPPED_MODULES_ARCHIVE = "unstripped_modules.tar.gz"
 # definition and extra files.
 FILEGROUP_DEF_BUILD_FRAGMENT_NAME = "filegroup_decl_build_frag.txt"
 FILEGROUP_DEF_ARCHIVE_SUFFIX = "_filegroup_decl.tar.gz"
+
+SIGNED_GKI_ARTIFACTS_ARCHIVE = "signed/boot-img.tar.gz"

@@ -20,6 +20,8 @@ load(
     ":constants.bzl",
     "FILEGROUP_DEF_ARCHIVE_SUFFIX",
     "FILEGROUP_DEF_BUILD_FRAGMENT_NAME",
+    "GKI_ARTIFACTS_AARCH64_OUTS",
+    "SIGNED_GKI_ARTIFACTS_ARCHIVE",
 )
 load(":hermetic_toolchain.bzl", "hermetic_toolchain")
 load(":utils.bzl", "utils")
@@ -88,6 +90,8 @@ def _write_template_file(
     template_content = """\
 _ALL_MODULE_NAMES = {all_module_names_repr}
 
+_ALL_GKI_ARTIFACTS = {all_gki_artifacts_repr}
+
 platform(
     name = {target_platform_repr},
     constraint_values = [
@@ -108,6 +112,13 @@ platform(
         package_relative_label(_CLANG_KLEAF_PKG).same_package_label({toolchain_version_repr}),
     ],
     visibility = ["//visibility:private"],
+)
+
+extracted_gki_artifacts_archive(
+    name = {signed_gki_artifacts_repr},
+    src = {signed_gki_artifacts_src_repr},
+    outs = [artifact for artifact in _ALL_GKI_ARTIFACTS if artifact != "boot-img.tar.gz"],
+    visibility = ["//visibility:public"],
 )
 
 kernel_filegroup(
@@ -262,6 +273,15 @@ def _write_filegroup_decl_file(
             depset([system_dlkm_staging_archive]),
             **(one | extra)
         )
+
+    sub.add("{signed_gki_artifacts_repr}", repr(ctx.attr.kernel_build.label.name + "_signed_gki_artifacts"))
+    sub.add("{signed_gki_artifacts_src_repr}", repr("//{}".format(SIGNED_GKI_ARTIFACTS_ARCHIVE)))
+    sub.add_joined(
+        "{all_gki_artifacts_repr}",
+        depset(GKI_ARTIFACTS_AARCH64_OUTS),
+        map_each = repr,
+        **join
+    )
 
     filegroup_decl_file = ctx.actions.declare_file("{}/{}".format(
         ctx.attr.kernel_build.label.name,
