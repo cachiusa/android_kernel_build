@@ -57,8 +57,7 @@ Example:
 ```
 ddk_headers(
    name = "headers",
-   hdrs = ["include/module.h"],
-   textual_hdrs = ["template.c"],
+   hdrs = ["include/module.h", "template.c"],
    includes = ["include"],
 )
 ```
@@ -90,7 +89,7 @@ ddk_headers(
 | <a id="ddk_headers-includes"></a>includes |  A list of directories, relative to the current package, that are re-exported as include directories.<br><br>[`ddk_module`](#ddk_module) with `deps` including this target automatically adds the given include directory in the generated `Kbuild` files.<br><br>You still need to add the actual header files to `hdrs`.   | List of strings | optional |  `[]`  |
 | <a id="ddk_headers-kconfigs"></a>kconfigs |  Kconfig files.<br><br>See [`Documentation/kbuild/kconfig-language.rst`](https://www.kernel.org/doc/html/latest/kbuild/kconfig.html) for its format.<br><br>Kconfig is optional for a `ddk_module`. The final Kconfig known by this module consists of the following:<br><br>- Kconfig from `kernel_build` - Kconfig from dependent modules, if any - Kconfig of this module, if any   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="ddk_headers-linux_includes"></a>linux_includes |  Like `includes` but specified in `LINUXINCLUDES` instead.<br><br>Setting this attribute allows you to override headers from `${KERNEL_DIR}`. See "Order of includes" in [`ddk_module`](#ddk_module) for details.<br><br>Like `includes`, `linux_includes` is applied to dependent `ddk_module`s.   | List of strings | optional |  `[]`  |
-| <a id="ddk_headers-textual_hdrs"></a>textual_hdrs |  The list of header files to be textually included by sources.<br><br>This is the location for declaring header files that cannot be compiled on their own; that is, they always need to be textually included by other source files to build valid code.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="ddk_headers-textual_hdrs"></a>textual_hdrs |  DEPRECATED. Use `hdrs` instead.<br><br>The list of header files to be textually included by sources.<br><br>This is the location for declaring header files that cannot be compiled on their own; that is, they always need to be textually included by other source files to build valid code.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 
 
 <a id="ddk_headers_archive"></a>
@@ -429,8 +428,7 @@ kernel_filegroup(<a href="#kernel_filegroup-name">name</a>, <a href="#kernel_fil
                  <a href="#kernel_filegroup-config_out_dir">config_out_dir</a>, <a href="#kernel_filegroup-config_out_dir_files">config_out_dir_files</a>, <a href="#kernel_filegroup-ddk_module_defconfig_fragments">ddk_module_defconfig_fragments</a>,
                  <a href="#kernel_filegroup-ddk_module_headers">ddk_module_headers</a>, <a href="#kernel_filegroup-env_setup_script">env_setup_script</a>, <a href="#kernel_filegroup-exec_platform">exec_platform</a>, <a href="#kernel_filegroup-gki_artifacts">gki_artifacts</a>, <a href="#kernel_filegroup-images">images</a>,
                  <a href="#kernel_filegroup-internal_outs">internal_outs</a>, <a href="#kernel_filegroup-kernel_release">kernel_release</a>, <a href="#kernel_filegroup-kernel_uapi_headers">kernel_uapi_headers</a>, <a href="#kernel_filegroup-lto">lto</a>, <a href="#kernel_filegroup-module_env_archive">module_env_archive</a>,
-                 <a href="#kernel_filegroup-modules_prepare_archive">modules_prepare_archive</a>, <a href="#kernel_filegroup-protected_modules_list">protected_modules_list</a>, <a href="#kernel_filegroup-strip_modules">strip_modules</a>, <a href="#kernel_filegroup-target_platform">target_platform</a>,
-                 <a href="#kernel_filegroup-trim_nonlisted_kmi">trim_nonlisted_kmi</a>)
+                 <a href="#kernel_filegroup-modules_prepare_archive">modules_prepare_archive</a>, <a href="#kernel_filegroup-protected_modules_list">protected_modules_list</a>, <a href="#kernel_filegroup-strip_modules">strip_modules</a>, <a href="#kernel_filegroup-target_platform">target_platform</a>)
 </pre>
 
 **EXPERIMENTAL.** The API of `kernel_filegroup` rapidly changes and
@@ -474,7 +472,6 @@ It can be used in the `base_kernel` attribute of a [`kernel_build`](#kernel_buil
 | <a id="kernel_filegroup-protected_modules_list"></a>protected_modules_list |  -   | <a href="https://bazel.build/concepts/labels">Label</a> | optional |  `None`  |
 | <a id="kernel_filegroup-strip_modules"></a>strip_modules |  See [`kernel_build.strip_modules`](#kernel_build-strip_modules).   | Boolean | optional |  `False`  |
 | <a id="kernel_filegroup-target_platform"></a>target_platform |  Target platform that describes characteristics of the target device.<br><br>See https://bazel.build/extending/platforms.   | <a href="https://bazel.build/concepts/labels">Label</a> | required |  |
-| <a id="kernel_filegroup-trim_nonlisted_kmi"></a>trim_nonlisted_kmi |  -   | Boolean | optional |  `False`  |
 
 
 <a id="kernel_kythe"></a>
@@ -643,6 +640,25 @@ Merge .kzip files
 | :------------- | :------------- | :------------- | :------------- | :------------- |
 | <a id="merge_kzip-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
 | <a id="merge_kzip-srcs"></a>srcs |  kzip files   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+
+
+<a id="merge_module_symvers"></a>
+
+## merge_module_symvers
+
+<pre>
+merge_module_symvers(<a href="#merge_module_symvers-name">name</a>, <a href="#merge_module_symvers-srcs">srcs</a>)
+</pre>
+
+Merge Module.symvers files
+
+**ATTRIBUTES**
+
+
+| Name  | Description | Type | Mandatory | Default |
+| :------------- | :------------- | :------------- | :------------- | :------------- |
+| <a id="merge_module_symvers-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
+| <a id="merge_module_symvers-srcs"></a>srcs |  It accepts targets from any of the following rules:   * [kernel_module](#kernel_module)   * [kernel_module_group](#kernel_module_group)   * [kernel_build](#kernel_build) (it requires `keep_module_symvers = True` to be set).   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 
 
 <a id="merged_kernel_uapi_headers"></a>
@@ -1123,7 +1139,7 @@ $(LINUXINCLUDE)
 | <a id="ddk_module-srcs"></a>srcs |  sources and local headers.<br><br>Source files (`.c`, `.S`, `.rs`) must be in the package of this `ddk_module` target, or in subpackages.<br><br>Generated source files (`.c`, `.S`, `.rs`) are accepted as long as they are in the package of this `ddk_module` target, or in subpackages.<br><br>Header files specified here are only visible to this `ddk_module` target, but not dependencies. To export a header so dependencies can use it, put it in `hdrs` and set `includes` accordingly.<br><br>Generated header files are accepted.   |  `None` |
 | <a id="ddk_module-deps"></a>deps |  A list of dependent targets. Each of them must be one of the following:<br><br>- [`kernel_module`](#kernel_module) - [`ddk_module`](#ddk_module) - [`ddk_headers`](#ddk_headers).   |  `None` |
 | <a id="ddk_module-hdrs"></a>hdrs |  See [`ddk_headers.hdrs`](#ddk_headers-hdrs)   |  `None` |
-| <a id="ddk_module-textual_hdrs"></a>textual_hdrs |  See [`ddk_headers.textual_hdrs`](#ddk_headers-textual_hdrs)   |  `None` |
+| <a id="ddk_module-textual_hdrs"></a>textual_hdrs |  See [`ddk_headers.textual_hdrs`](#ddk_headers-textual_hdrs). DEPRECATED. Use `hdrs`.   |  `None` |
 | <a id="ddk_module-includes"></a>includes |  See [`ddk_headers.includes`](#ddk_headers-includes)   |  `None` |
 | <a id="ddk_module-conditional_srcs"></a>conditional_srcs |  A dictionary that specifies sources conditionally compiled based on configs.<br><br>Example:<br><br><pre><code>conditional_srcs = {&#10;    "CONFIG_FOO": {&#10;        True: ["foo.c"],&#10;        False: ["notfoo.c"]&#10;    }&#10;}</code></pre><br><br>In the above example, if `CONFIG_FOO` is `y` or `m`, `foo.c` is compiled. Otherwise, `notfoo.c` is compiled instead.   |  `None` |
 | <a id="ddk_module-linux_includes"></a>linux_includes |  See [`ddk_headers.linux_includes`](#ddk_headers-linux_includes)<br><br>Unlike `ddk_headers.linux_includes`, `ddk_module.linux_includes` is **NOT** applied to dependent `ddk_module`s.   |  `None` |
