@@ -52,7 +52,7 @@ def _extracted_system_dlkm_staging_archive_impl(ctx):
         mnemonic = "ExtractedSystemDlkmStagingArchive",
         inputs = [ctx.file.src],
         outputs = out_files.values(),
-        tools = hermetic_tools.deps,
+        tools = depset([ctx.executable._search_and_cp_output], transitive = [hermetic_tools.deps]),
         progress_message = "Extracting GKI modules from system_dlkm %{label}",
         command = cmd,
     )
