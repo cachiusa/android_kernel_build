@@ -13,7 +13,7 @@
 #---- default constants ----
 TYPE="llvm"
 MIRROR="https://cdn.kernel.org"
-#MIRROR="https://mirrors.edge.kernel.org/pub/tools"
+#MIRROR="https://mirrors.edge.kernel.org"
 HOST_ARCH=$(uname -m)
 TARGET_ARCH="aarch64"
 COMP="xz"
