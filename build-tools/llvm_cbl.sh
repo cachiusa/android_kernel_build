@@ -13,6 +13,7 @@
 #---- default constants ----
 TYPE="llvm"
 MIRROR="https://cdn.kernel.org"
+#MIRROR="https://mirrors.edge.kernel.org/pub/tools"
 HOST_ARCH=$(uname -m)
 TARGET_ARCH="aarch64"
 COMP="xz"
@@ -20,10 +21,10 @@ VERSION_PTN='[0-9]+\.[0-9]+\.[0-9]+(-rc[0-9]+)?'
 
 #---- dynamic variables ----
 set_vars() {
-    [[ $1 = "--empty-ver" ]] && local VERSION=
     case ${TYPE} in
         llvm)
             FILES="${MIRROR}/pub/tools/llvm/files"
+            FILES_INDEX_HTML="${MIRROR}/pub/tools/llvm/files/"
             PKG="llvm-${VERSION}-${HOST_ARCH}"
             COMPILER="clang"
             TAR_ARGS="--strip-components=1 ${PKG}"
@@ -33,6 +34,7 @@ set_vars() {
             GCC_2="${TARGET_ARCH}-linux"
 
             FILES="${MIRROR}/pub/tools/crosstool/files/bin/${HOST_ARCH}/${VERSION}"
+            FILES_INDEX_HTML="${MIRROR}/pub/tools/crosstool/files/bin/${HOST_ARCH}/"
             PKG="${HOST_ARCH}-${GCC_1}-${GCC_2}"
             COMPILER="${GCC_2}-gcc"
             TAR_ARGS="--strip-components=2 ${GCC_1}/${GCC_2}"
@@ -73,7 +75,10 @@ help_msg() { echo -e "Usage: $0 -p <install path> [options...]
  --no-extract   downloads the package but don't extract
  --gcc          set up GCC and binutils
  --llvm         set up Clang/LLVM (default)
- --help         this screen"
+ --help         this screen
+
+More info about this toolchain:
+    <${MIRROR}/pub/tools>"
 }
 parse_args() {
     [[ -z $1 ]] && help_msg && exit 1
@@ -115,7 +120,7 @@ parse_args() {
     [[ -z ${HOME_DIR} ]] && error_msg "You must set toolchain home with '-p'"
 }
 print_info() {
-    info_msg2 "Toolchain: ${TYPE}"
+    info_msg2 "Set toolchain: ${TYPE}"
     info_msg2 "Install home: ${HOME_DIR}"
     info_msg2 "Host arch: ${HOST_ARCH}"
 
@@ -129,7 +134,7 @@ cc2ver() {
 }
 check_installed() {
     # check if $VERSION specified is installed in install dir
-    
+
     IS_INSTALLED=
     installed_ccs=$(find -P "${HOME_DIR}" -path "*bin/${COMPILER}")
 
@@ -144,7 +149,7 @@ check_installed() {
     done
 
     if [[ ${IS_INSTALLED} = "1" ]]; then
-        info_msg2 "Installed: ${TYPE} ${VERSION}"
+        info_msg2 "Installed: ${TYPE} - ${VERSION}"
         return
     else
         return 1
@@ -153,9 +158,7 @@ check_installed() {
 get_versions() {
     info_msg "Fetching versions list"
 
-    set_vars --empty-ver
-
-    _vers="$(curl -s "${FILES}/" | grep -oE "${VERSION_PTN}" | sort -uV)"
+    _vers="$(curl -s "${FILES_INDEX_HTML}" | grep -oE "${VERSION_PTN}" | sort -uV)"
 
     [[ -z ${_vers} ]] && error_msg "Failed to retrieve version list"
 
@@ -175,16 +178,18 @@ get_versions() {
 }
 check_and_set_version() {
     if [[ -n ${VERSION} ]]; then
-        info_msg "Set toolchain version: ${VERSION}"
-
         local is_ver_ok=
 
         for _v in "${CURRENT_VERS[@]}"; do
             [[ ${VERSION} == "$_v" ]] && is_ver_ok=1 && break
         done
 
-        [[ -z ${is_ver_ok} ]] && error_msg "${TYPE} ${VERSION}: not found
-Avaliable versions:${_restore} ${CURRENT_VERS[*]}"
+        if [[ ${is_ver_ok} = "1" ]]; then
+            info_msg2 "Install job: ${TYPE} - ${VERSION}"
+        else
+            error_msg "Invalid version set: ${VERSION} ${_restore}
+Avaliable versions: ${CURRENT_VERS[*]}"
+        fi
     fi
 
     if [[ ${TYPE} = "gcc" ]]; then
