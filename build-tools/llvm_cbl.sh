@@ -61,24 +61,32 @@ info_msg() { echo -e "${_blue}[${_lblue}+${_blue}]${_restore} ${1}"; }
 info_msg2() { echo -e " +  ${1}"; }
 error_msg() { echo -e "${_bold}${_red}[${_lred}!${_red}]${_restore}${_bold} ${1}${_restore}"; exit 1; }
 help_msg() { echo -e "Usage: $0 -p <install path> [options...]
+
  -a <arch>      host arch
-        default: ${HOST_ARCH}
+    default: ${HOST_ARCH}
+
  -A <arch>      target arch (GCC only)
-        default: ${TARGET_ARCH}
- -f <format>    set tar compression format
-        default: xz
- -v <version>   specify toolchain version
+    default: ${TARGET_ARCH}
+
+ -f <format>    tar compression format
+    default: ${COMP}
+
+ -v <version>   toolchain version
     'all': download all versions (please do not DDoS the servers)
     'stable': ignore '-rc' versions
-        default: latest
- -x             print each command being executed
- --no-extract   downloads the package but don't extract
- --gcc          set up GCC and binutils
- --llvm         set up Clang/LLVM (default)
- --help         this screen
+    default: latest
 
-More info about this toolchain:
-    <${MIRROR}/pub/tools>"
+ -x             print each command being executed
+
+ --no-extract   downloads the package but don't extract
+
+ --gcc          set up GCC & binutils
+    More info: <${MIRROR}/pub/tools/crosstool>
+
+ --llvm         set up Clang/LLVM (default)
+    More info: <${MIRROR}/pub/tools/llvm>
+
+ --help         this screen"
 }
 parse_args() {
     [[ -z $1 ]] && help_msg && exit 1
