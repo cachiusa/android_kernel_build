@@ -1055,3 +1055,9 @@ function check_tc() {
     exit 1
   fi
 }
+
+# Alias for scripts/config
+function kconfig() {
+    ${KERNEL_DIR}/scripts/config --file ${OUT_DIR}/.config "$@"
+    (cd ${OUT_DIR} && make ${TOOL_ARGS} O=${OUT_DIR} "${MAKE_ARGS[@]}" olddefconfig)
+}
