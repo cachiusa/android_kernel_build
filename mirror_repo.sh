@@ -23,6 +23,3 @@ for branch in ${target[@]}; do
   git push origin FETCH_HEAD:"refs/heads/$branch"
 done
 
-echo -e "\n[+] Updating tags...\n"
-git fetch "$r_name" --tags
-git push origin --tags
